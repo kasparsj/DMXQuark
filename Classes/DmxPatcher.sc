@@ -256,9 +256,9 @@ DmxPatcher {
 		if(fixtureList.isNil, {
 			fixtureList = fixtures;
 		});
-		fixtureList.do({ |dev, i|
-			if(dev.fixture.hasMethod(method), {
-				buses.add(dev.buses[method]);
+		fixtureList.do({ |fix, i|
+			if(fix.fixture.hasMethod(method), {
+				buses.add(fix.buses[method]);
 			});
 		});
 		^buses;
@@ -268,8 +268,8 @@ DmxPatcher {
 		if(fixtureList.isNil, {
 			fixtureList = fixtures;
 		});
-		fixtureList.do({ |dev, i|
-			if(dev.fixture.hasMethod(method), {
+		fixtureList.do({ |fix, i|
+			if(fix.fixture.hasMethod(method), {
 				numbuses = numbuses +1;
 			});
 		});
@@ -284,6 +284,15 @@ DmxPatcher {
 		^this.numBusesForMethod(method, fixtureList);
 	}
 
+	setGroup { |group, arg1, arg2|
+		if (groups[group].notNil, {
+			groups[group].do({ |fix, i|
+				fix.fixture.set(arg1, arg2);
+			});
+		}, {
+			"DmxPatcher::setGroup group %s does not exist".format(group).postln;
+		});
+	}
 
 	message { |msg|
 		// dispatches message, calls methods on fixtures, sends dmx data to buffer

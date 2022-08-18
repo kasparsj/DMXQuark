@@ -466,26 +466,36 @@ DmxFixture {
 	}
 
 	set { |arg1, arg2|
-		var values = arg1, chan = arg2 ? 0;
-		if(arg1.isKindOf(SequenceableCollection).not, {
-			values = [arg2];
-			chan = arg1;
-		});
-		if (chan.isKindOf(Symbol), {
-			var index = types[type][\chNames].indexOf(chan);
-			if (index.isNil, {
-				"DMXFixture::set invalid channel name %".format(chan).throw;
+		if (arg1.isKindOf(Symbol) and: { hasMethod(arg1) }, {
+			action(arg1, arg2);
+		}, {
+			var values = arg1, chan = arg2 ? 0;
+			if(arg1.isKindOf(SequenceableCollection).not, {
+				values = [arg2];
+				chan = arg1;
 			});
-			chan = index;
+			if (chan.isKindOf(Symbol), {
+				var index = types[type][\chNames].indexOf(chan);
+				if (index.isNil, {
+					"channel % not found in %".format(chan, type).throw;
+				});
+				chan = index;
+			});
+			if (values.size > types[type][\channels], {
+				values = values[0..(types[type][\channels]-1)];
+				"DmxFixture::set too more values than channels".postln;
+			});
+			buffer.set(values, (address-1)+chan);
 		});
-		if (values.size > types[type][\channels], {
-			values = values[0..(types[type][\channels]-1)];
-			"DmxFixture::set too more values than channels".postln;
-		});
-		buffer.set(values, (address-1)+chan);
 	}
 
 	get { |chan|
+		if (chan.isKindOf(Symbol), {
+			chan = types[type][\chNames].indexOf(chan);
+			if (chan.isNil, {
+				"channel % not found in %".format(chan, type).throw;
+			});
+		});
 		^buffer.buffer[(address-1)+chan];
 	}
 
@@ -494,19 +504,29 @@ DmxFixture {
 	}
 
 	action { |method, arguments|
-		// get type definition wiht methods from global type dictionary stored in classvar types
-		var def = types.at(type);
-		if(def.at(method.asSymbol).notNil, {
-			// calls back set itself...
-			def.at(method.asSymbol).value(this, arguments);
+		var def = types[type].at(method.asSymbol);
+		if (def.motNil, {
+			def.value(this, arguments);
 		}, {
 			("method "+method+" not found in "+type.asString+"!").postln;
 		});
 	}
 
 	hasMethod { |method|
-		var def = types.at(type);
-		^def.at(method.asSymbol).notNil;
+		^types.at(type).at(method.asSymbol).notNil;
+	}
+
+	channel { |name|
+		var index = types[type][\chNames].indexOf(name);
+		if (index.notNil, {
+			^index;
+		}, {
+			("channel "+name+" not found in "+type.asString+"!").postln;
+		});
+	}
+
+	hasChannel { |name|
+		^types.at(type)[\chNames].indexOf(name).notNil;
 	}
 }
 
