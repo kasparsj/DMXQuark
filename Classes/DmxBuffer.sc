@@ -119,10 +119,13 @@ DmxBuffer {
 			offset = arg1;
 		});
 		if (offset.isKindOf(Integer).not, {
-			"DmxBuffer::set offset must be Integer %s passed".format(offset).throw;
+			"channel must be Integer, %s passed".format(offset).throw;
 		});
 		values.do({ |val, i|
 			if(i + offset < buffer.size, {
+				while ({ val < 0 }, {
+					val = val + 255;
+				});
 				buffer[i + offset] = val;
 			});
 		});

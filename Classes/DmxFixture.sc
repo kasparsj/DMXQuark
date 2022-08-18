@@ -7,9 +7,10 @@ DmxFixture {
 	classvar types; // holds different types of devices
 	var <buffer;
 	var <>address = 0;
-	var <>type;
+	var <type;
 	var <buses;
 	var <routine;
+	var <matrix;
 
 	*initClass {
 		// load some default devices on class instantiation
@@ -484,9 +485,15 @@ DmxFixture {
 	}
 
 	init { | mytype, mybuffer, myaddress = 0 |
-		type = mytype;
-		buffer = mybuffer;
-		address = myaddress;
+		if (types[mytype].notNil, {
+			var channels = types[mytype][\channels];
+			type = mytype;
+			buffer = mybuffer;
+			address = myaddress;
+			matrix = Array.fill(channels, 1);
+		}, {
+			"fixture type not found %s".format(mytype).throw;
+		});
 	}
 
 	makeBuses { |server|
@@ -496,9 +503,11 @@ DmxFixture {
 			// do for each method, but omit reserved keys 'channel', 'init', 'numArgs:
 			if(reservedKeys.includes(method) == false, {
 				var numArgs = DmxFixture.types[type].numArgs[method];
-				var bus = Bus.control(server, numArgs);
-				bus.setSynchronous(-1);
-				buses.put(method, bus);
+				if (numArgs.notNil, {
+					var bus = Bus.control(server, numArgs);
+					bus.setSynchronous(-1);
+					buses.put(method, bus);
+				});
 			});
 		});
 		^buses;
@@ -543,7 +552,7 @@ DmxFixture {
 		if (arg1.isKindOf(Symbol) and: { this.hasMethod(arg1) }, {
 			this.action(arg1, arg2);
 		}, {
-			var values = arg1, chan = arg2 ? 0;
+			var values = arg1, chan = arg2 ? 0, to;
 			if(arg1.isKindOf(SequenceableCollection).not, {
 				values = [arg2];
 				chan = arg1;
@@ -559,7 +568,8 @@ DmxFixture {
 				values = values[0..(types[type][\channels]-1)];
 				"more values than channels passed".postln;
 			});
-			buffer.set(values, (address-1)+chan);
+			to = chan + values.size - 1;
+			buffer.set(values * matrix[chan..to], (address-1) + chan);
 		});
 	}
 
@@ -570,11 +580,15 @@ DmxFixture {
 				"channel % not found in %".format(chan, type).throw;
 			});
 		});
-		^buffer.buffer[(address-1)+chan];
+		^(buffer.buffer[(address-1)+chan] * matrix[chan]);
 	}
 
-	getData {
-		^buffer.buffer[(address-1)..(address-1+types[type][\channels])];
+	getData { |from = 0, to = -1|
+		var channels = types[type][\channels];
+		while ({ to < 0 }, {
+			to = to + channels;
+		});
+		^(buffer.buffer[(address-1+from)..(address-1+to)] * matrix[from..to]);
 	}
 
 	action { |method, arguments|

@@ -273,9 +273,6 @@ DmxPatcher {
 	// basically OSCFunc callbacks... get: msg, time, addr, and recvPort
 	// a little deprecated!
 	fixturesMsg { |msg, time, addr, recvPort|
-		// msg[0] is address, msg[1] and following are arguments
-/*		msg.postln;*/
-/*		msg.do({ |d| d.class.postln });*/
 		if(msg[1].isKindOf(Integer), {
 			var fixtureNum = msg[1];
 			var method = msg[2];
@@ -283,7 +280,6 @@ DmxPatcher {
 			(msg.size-3).do({ |i|
 				arguments.add(msg[i + 3]);
 			});
-/*			[method, arguments].postln;*/
 			if(fixtureNum < fixtures.size, {
 				fixtures[fixtureNum].action(method, arguments);
 			}, {
@@ -304,7 +300,6 @@ DmxPatcher {
 	}
 
 	groupsMsg {|msg, time, addr, recvPort|
-/*		msg.postln;*/
 		var group = msg[1];
 		var groupFixtures = groups[group];
 		var method = msg[2];
