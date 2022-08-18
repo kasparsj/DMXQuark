@@ -19,9 +19,9 @@ DmxGroup {
 		fixtures.remove(fixture);
 	}
 
-	set { |arg1, arg2|
+	set { |arg1, arg2, arg3|
 		fixtures.do({ |fixture, i|
-			fixture.set(arg1, arg2);
+			fixture.set(arg1, arg2, arg3);
 		});
 	}
 

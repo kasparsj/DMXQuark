@@ -460,6 +460,17 @@ DmxFixture {
 		^myTypes;
 	}
 
+	*createRange { |names|
+		var range = ();
+		var size = (256 / names.size).asInteger;
+		names.do { |name, i|
+			var from = i * size;
+			var to = (i+1) * size - 1;
+			range.add(name.asSymbol -> (from..to));
+		};
+		^range;
+	}
+
 	*busesForMethod { |method, fixtureList|
 		var buses = List();
 		fixtureList.do({ |fixture, i|
@@ -548,12 +559,19 @@ DmxFixture {
 		this.freeBuses();
 	}
 
-	set { |arg1, arg2|
+	set { |arg1, arg2, arg3|
 		if (arg1.isKindOf(Symbol) and: { this.hasMethod(arg1) }, {
 			this.action(arg1, arg2);
 		}, {
 			var values = arg1, chan = arg2 ? 0, to;
-			if(arg1.isKindOf(SequenceableCollection).not, {
+			if (arg1.isKindOf(Symbol) and: { arg2.isKindOf(Symbol) }, {
+				if (this.hasRange(arg1, arg2), {
+					arg2 = this.range(arg1, arg2, arg3 ? 0);
+				}, {
+					"range % not found in % for channel %".format(arg2, type.asString, arg1).throw;
+				});
+			});
+			if (arg1.isKindOf(SequenceableCollection).not, {
 				values = [arg2];
 				chan = arg1;
 			});
@@ -607,7 +625,7 @@ DmxFixture {
 	}
 
 	hasMethod { |method|
-		^types.at(type).at(method.asSymbol).notNil;
+		^types[type].at(method.asSymbol).notNil;
 	}
 
 	channel { |name|
@@ -616,12 +634,33 @@ DmxFixture {
 			^index;
 		}, {
 			"channel % not found in %!".format(name, type.asString).postln;
-			().postln;
 		});
 	}
 
 	hasChannel { |name|
-		^types.at(type)[\channels].indexOf(name).notNil;
+		^types[type][\channels].indexOf(name).notNil;
+	}
+
+	range { |channel, name, value|
+		var chRange = if (types[type][\ranges].notNil, { types[type][\ranges].at(channel) }, { nil });
+		if (chRange.notNil, {
+			var range = chRange.at(name);
+			if (range.notNil, {
+				if (value.notNil, {
+					^range[((range.size-1) * value).round.asInteger];
+				}, {
+					^range;
+				});
+			}, {
+				"range % not found in % for channel %".format(name, type.asString, channel).postln;
+			});
+		}, {
+			"% ranges not defined for channel %".format(type.asString, channel).postln;
+		});
+	}
+
+	hasRange { |channel, name|
+		^(types[type][\ranges].notNil and: { types[type][\ranges].at(channel).notNil and: { types[type][\ranges].at(channel).at(name).notNil } });
 	}
 }
 
