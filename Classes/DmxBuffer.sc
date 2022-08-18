@@ -37,6 +37,9 @@ DmxBuffer {
 		universeList = List();
 		runner = this.makeRunner;
 		runner.play;
+		CmdPeriod.doOnce({
+			this.close;
+		});
 	}
 
 	close {
@@ -477,11 +480,12 @@ EnttecDMXUSBPro {
 			myPort = SerialPort.devices[myPort];
 		});
 		port = myPort;
-		("opening Port "++ port);
+		("opening serial Port "++ port).postln;
 		sp = SerialPort(port, bauds, 8, true, nil, false, false, false );
 	}
 
 	close {
+		("closing serial Port "++ port).postln;
 		sp.close;
 	}
 

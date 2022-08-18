@@ -78,9 +78,6 @@ DmxPatcher {
 			fix[\routine].stop;
 			this.freeBusesForFixture(fix);
 		});
-		buffers.size.do({
-			buffers.pop.close;
-		});
 		all.removeAt(id);
 		if((default == this) && (all.size > 0), {
 			default = all[all.keys.asArray.at(0)];
@@ -166,16 +163,26 @@ DmxPatcher {
 	}
 
 	removeFixture { |index|
-		groups.keysValuesDo({ |grpname, fixtures|
-			fixtures.do({ |dev, n|
-				if(dev == fixtures[index], {
+		var fixture = fixtures[index];
+		groups.keysValuesDo { |grpname, fixtures|
+			fixtures.do { |fix, n|
+				if(fix == fixture, {
 					this.removeFixtureFromGroup(n, grpname);
 				});
+			};
+		};
+		fixture[\routine].stop;
+		this.freeBusesForFixture(fixture);
+		fixtures.removeAt(index);
+
+		if (fixture.buffer.notNil, {
+			var sameBuffer = fixtures.collect { |fix, n|
+				fix.buffer == fixture.buffer;
+			};
+			if (sameBuffer.size == 0, {
+				buffers.remove(fixture.buffer);
 			});
 		});
-		fixtures[index][\routine].stop;
-		this.freeBusesForFixture(fixtures[index]);
-		fixtures.removeAt(index);
 	}
 
 	nextFreeAddr { |numChans = 1|

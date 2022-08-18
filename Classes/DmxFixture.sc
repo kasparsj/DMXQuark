@@ -466,27 +466,27 @@ DmxFixture {
 	}
 
 	set { |arg1, arg2|
-		var values = arg1, offset = arg2 ? 0;
+		var values = arg1, chan = arg2 ? 0;
 		if(arg1.isKindOf(SequenceableCollection).not, {
 			values = [arg2];
-			offset = arg1;
+			chan = arg1;
 		});
-		if (offset.isKindOf(Symbol), {
-			var index = types[type][\chNames].indexOf(offset);
+		if (chan.isKindOf(Symbol), {
+			var index = types[type][\chNames].indexOf(chan);
 			if (index.isNil, {
-				"DMXFixture::set invalid channel name %".format(offset).throw;
+				"DMXFixture::set invalid channel name %".format(chan).throw;
 			});
-			offset = index;
+			chan = index;
 		});
 		if (values.size > types[type][\channels], {
 			values = values[0..(types[type][\channels]-1)];
 			"DmxFixture::set too more values than channels".postln;
 		});
-		buffer.set(values, offset);
+		buffer.set(values, (address-1)+chan);
 	}
 
 	get { |chan|
-		^buffer.buffer[(address-1+chan)];
+		^buffer.buffer[(address-1)+chan];
 	}
 
 	getData {
