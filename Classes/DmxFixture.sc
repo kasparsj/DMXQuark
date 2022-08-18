@@ -15,12 +15,12 @@ DmxFixture {
 	*initClass {
 		// load some default devices on class instantiation
 		// a few keys are reserved for special purposes:
-		//  channel - holds to total number of dmx channels used by this fixture
-		//  numArgs - holds number of arguments each method expects
+		//  numChannels - holds to total number of dmx channels used by this fixture
+		//  buses - holds number of arguments each method expects
 		//  init - holds the init method which i.e. can set some default values
 		DmxFixture.addType(\dim, (
-			channels: 1,
-			numArgs: (dim: 1),
+			numChannels: 1,
+			buses: (dim: 1),
 			dim: { |self, args|
 				self.set(0, (args[0] * 255).round.asInteger);
 			},
@@ -29,8 +29,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\camera, (
-			channels: 16,
-			numArgs: (camerapos: 3, cameraaim: 3),
+			numChannels: 16,
+			buses: (camerapos: 3, cameraaim: 3),
 			camerapos: { |self, args|
 				// set pos (x, y, z) and direction (pan, title – no pitch for now) if wanted
 				// split x, y, z to msb/lsb (coarse/fine)
@@ -98,8 +98,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\smplrgb, (
-			channels: 3,
-			numArgs: (color: 3),
+			numChannels: 3,
+			buses: (color: 3),
 			color: { |self, args|
 				self.set(0, (args[0] * 255).round.asInteger);
 				self.set(1, (args[1] * 255).round.asInteger);
@@ -107,8 +107,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\waldpar, (
-			channels: 6,
-			numArgs: (color: 3, strobe: 1),
+			numChannels: 6,
+			buses: (color: 3, strobe: 1),
 			color: { |self, args|
 				self.set(0, (args[0] * 255).round.asInteger);
 				self.set(1, (args[1] * 255).round.asInteger);
@@ -124,9 +124,9 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\waldfuck2, (
-			channels: 7,
+			numChannels: 7,
 			// dim, strobe, r, g, b, w, chaser, chaser2
-			numArgs: (color: 3),
+			buses: (color: 3),
 			color: { |self, args|
 				self.set(2, (args[0] * 255).round.asInteger);
 				self.set(3, (args[1] * 255).round.asInteger);
@@ -140,8 +140,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\waldfuck, (
-			channels: 6,
-			numArgs: (color: 3),
+			numChannels: 6,
+			buses: (color: 3),
 			color: { |self, args|
 				self.set(1, (args[0] * 255).round.asInteger);
 				self.set(2, (args[1] * 255).round.asInteger);
@@ -154,16 +154,16 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\waldbarInit, (
-			channels: 11,
-			numArgs: (),
+			numChannels: 11,
+			buses: (),
 			init: { |self|
 				// set intensity of whole bar to FL
 				self.set(10, 255);
 			}
 		));
 		DmxFixture.addType(\waldbar, (
-			channels: 3,
-			numArgs: (color: 3),
+			numChannels: 3,
+			buses: (color: 3),
 			color: { |self, args|
 				self.set(0, (args[0] * 255).round.asInteger);
 				self.set(1, (args[1] * 255).round.asInteger);
@@ -171,16 +171,16 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\waldfog, (
-			channels: 1,
-			numArgs: (fog: 1),
+			numChannels: 1,
+			buses: (fog: 1),
 			fog: { |self, args|
 				self.set(0, (args[0]*255).round.asInteger);
 			},
 			init: {|self| self.set(0, 0) }
 		));
 		DmxFixture.addType(\waldblitz, (
-			channels: 2,
-			numArgs: (blitz: 1),
+			numChannels: 2,
+			buses: (blitz: 1),
 			blitz: { |self, args|
 				self.set(0, (args[0] * 255).round.asInteger);
 			},
@@ -190,8 +190,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\robeCw1200E, (
-			channels: 17,
-			numArgs: (color: 3, cmyk: 4, strobe: 1, zoom: 1),
+			numChannels: 17,
+			buses: (color: 3, cmyk: 4, strobe: 1, zoom: 1),
 			init: { |self|
 				// pan/tilt center:
 				self.set(0, 127);
@@ -243,8 +243,8 @@ DmxFixture {
 			}
 		));
 		DmxFixture.addType(\ClrChngr, (
-			channels: 11,
-			numArgs: (color: 3, cmyk: 4),
+			numChannels: 11,
+			buses: (color: 3, cmyk: 4),
 			init: { |self|
 				// shutter open:
 				self.set(4, 255);
@@ -283,8 +283,8 @@ DmxFixture {
 			},*/
 		));
 		DmxFixture.addType(\waldStudio, (
-			channels: 7,
-			numArgs: (color: 3, strobe: 1),
+			numChannels: 7,
+			buses: (color: 3, strobe: 1),
 			init: { |self|
 				self.set(6, 255); // dimmer
 				fork{
@@ -312,8 +312,8 @@ DmxFixture {
 		));
 
 		DmxFixture.addType(\fiveSpot, (
-			channels: 6,
-			numArgs: (colorw: 4, strobe: 1),
+			numChannels: 6,
+			buses: (colorw: 4, strobe: 1),
 			init: { |self|
 				self.set(4, 255); // dimmer
 			},
@@ -333,8 +333,8 @@ DmxFixture {
 		));
 
 		DmxFixture.addType(\platWashZFXProBasicMode, (
-			channels: 20,
-			numArgs: (color: 3, pos: 2),
+			numChannels: 20,
+			buses: (color: 3, pos: 2),
 			init: { |self|
 				// pan/tilt center
 				self.set(0, 127); self.set(1, 127);
@@ -362,8 +362,8 @@ DmxFixture {
 		));
 
 		DmxFixture.addType(\smplrgbw, (
-			channels: 4,
-			numArgs: (color: 3),
+			numChannels: 4,
+			buses: (color: 3),
 			color: { |self, args|
 				// rgbw: use white channel automatically...
 				var white;
@@ -379,8 +379,8 @@ DmxFixture {
 
 		// showtec led light bar 8, needs some initiating (dimmer and strobe channel...)
 		DmxFixture.addType(\showtecLLB8init, (
-			channels: 26,
-			numArgs: (),
+			numChannels: 26,
+			buses: (),
 			init: { |self|
 				// strobe channel off
 				self.set(24, 0);
@@ -390,8 +390,8 @@ DmxFixture {
 		));
 
 		DmxFixture.addType(\lmaxxeasywash, (
-			channels: 12,
-			numArgs: (color: 3, pos: 2),
+			numChannels: 12,
+			buses: (color: 3, pos: 2),
 			init: { |self|
 				// pan/tilt center
 				self.set(0, 127); self.set(1, 127);
@@ -440,8 +440,8 @@ DmxFixture {
 		});
 		types.put(title.asSymbol, definition);
 		// give default channel count...
-		if(definition.at(\channels)==nil, {
-			types.at(title.asSymbol)[\channels] = 1;
+		if(definition.at(\numChannels)==nil, {
+			types.at(title.asSymbol)[\numChannels] = 1;
 		});
 	}
 
@@ -486,23 +486,23 @@ DmxFixture {
 
 	init { | mytype, mybuffer, myaddress = 0 |
 		if (types[mytype].notNil, {
-			var channels = types[mytype][\channels];
+			var numChannels = types[mytype][\numChannels];
 			type = mytype;
 			buffer = mybuffer;
 			address = myaddress;
-			matrix = Array.fill(channels, 1);
+			matrix = Array.fill(numChannels, 1);
 		}, {
 			"fixture type not found %s".format(mytype).throw;
 		});
 	}
 
 	makeBuses { |server|
-		var reservedKeys = ['channels', 'chNames', 'init', 'numArgs'];
+		var reservedKeys = ['numChannels', 'channels', 'init', 'buses'];
 		buses = Dictionary();
 		DmxFixture.types[type].keysValuesDo({ |method|
-			// do for each method, but omit reserved keys 'channel', 'init', 'numArgs:
+			// do for each method, but omit reserved keys 'channel', 'init', 'buses:
 			if(reservedKeys.includes(method) == false, {
-				var numArgs = DmxFixture.types[type].numArgs[method];
+				var numArgs = DmxFixture.types[type].buses[method];
 				if (numArgs.notNil, {
 					var bus = Bus.control(server, numArgs);
 					bus.setSynchronous(-1);
@@ -524,7 +524,7 @@ DmxFixture {
 			var val, lastval = (), changed;
 			inf.do({
 				buses.keysValuesDo({ |method, bus|
-					var numArgs = DmxFixture.types[type].numArgs[method];
+					var numArgs = DmxFixture.types[type].buses[method];
 					if (numArgs > 1, {
 						val = bus.getnSynchronous;
 						changed = val[0] > 0 and: { val != lastval[method] };
@@ -558,14 +558,14 @@ DmxFixture {
 				chan = arg1;
 			});
 			if (chan.isKindOf(Symbol), {
-				var index = types[type][\chNames].indexOf(chan);
+				var index = types[type][\channels].indexOf(chan);
 				if (index.isNil, {
 					"channel % not found in %".format(chan, type).throw;
 				});
 				chan = index;
 			});
-			if (values.size > types[type][\channels], {
-				values = values[0..(types[type][\channels]-1)];
+			if (values.size > types[type][\numChannels], {
+				values = values[0..(types[type][\numChannels]-1)];
 				"more values than channels passed".postln;
 			});
 			to = chan + values.size - 1;
@@ -575,7 +575,7 @@ DmxFixture {
 
 	get { |chan|
 		if (chan.isKindOf(Symbol), {
-			chan = types[type][\chNames].indexOf(chan);
+			chan = types[type][\channels].indexOf(chan);
 			if (chan.isNil, {
 				"channel % not found in %".format(chan, type).throw;
 			});
@@ -584,9 +584,9 @@ DmxFixture {
 	}
 
 	getData { |from = 0, to = -1|
-		var channels = types[type][\channels];
+		var numChannels = types[type][\numChannels];
 		while ({ to < 0 }, {
-			to = to + channels;
+			to = to + numChannels;
 		});
 		^(buffer.buffer[(address-1+from)..(address-1+to)] * matrix[from..to]);
 	}
@@ -611,7 +611,7 @@ DmxFixture {
 	}
 
 	channel { |name|
-		var index = types[type][\chNames].indexOf(name);
+		var index = types[type][\channels].indexOf(name);
 		if (index.notNil, {
 			^index;
 		}, {
@@ -621,14 +621,14 @@ DmxFixture {
 	}
 
 	hasChannel { |name|
-		^types.at(type)[\chNames].indexOf(name).notNil;
+		^types.at(type)[\channels].indexOf(name).notNil;
 	}
 }
 
 /*
 (
 DmxFixture.addType(\rgbpar, (
-	channels: 5,
+	numChannels: 5,
 	color: { |this, args|
 		var r = args[0];
 		var g = args[1];

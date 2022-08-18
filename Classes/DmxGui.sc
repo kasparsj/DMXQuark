@@ -658,14 +658,14 @@ DmxGui_manageFixtures {
 		});
 
 		devslctr = PopUpMenu()
-			.items_(DmxFixture.typeNames().collect({ |name| name.asString+"("++DmxFixture.types.at(name).channels++"ch)" }))
+			.items_(DmxFixture.typeNames().collect({ |name| name.asString+"("++DmxFixture.types.at(name).numChannels++"ch)" }))
 			.action_({this.updateView});
 
 		addrTxt = TextField();
 		updateActions.add({
 			if(autoAddr.value, {
-				var devType = DmxFixture.types[DmxFixture.typeNames.at(devslctr.value)];
-				addrTxt.string_(patcher.nextFreeAddr(devType.channels));
+				var fixType = DmxFixture.types[DmxFixture.typeNames.at(devslctr.value)];
+				addrTxt.string_(patcher.nextFreeAddr(fixType.numChannels));
 			});
 		});
 		autoAddr = CheckBox().value_(true);

@@ -6,7 +6,6 @@ DmxPatcher {
 	var <groups;
 	var <id;
 	var <buffers; // holds DMXBuffer objects
-	var <busses;
 	var server; // holds default server since patcher uses busses!
 	var <>fps; // fps to get data from busses with
 	classvar <default; // default (usually first) DmxPatcher...
@@ -45,7 +44,6 @@ DmxPatcher {
 		fixtures = List();
 		groups = IdentityDictionary();
 		buffers = List();
-		busses = List();
 		server = Server.default;
 		fps = 60;
 
@@ -116,8 +114,6 @@ DmxPatcher {
 		});
 
 		myFixture.tryAction(\init);
-
-		// create busses for each method, get their data in a routine or something...
 	}
 
 	removeFixture { |index|
@@ -143,9 +139,9 @@ DmxPatcher {
 		var freeChan = nil;
 		var cntr, n;
 		fixtures.do({ |fixture|
-			var channels = DmxFixture.types.at(fixture.type).at(\channels);
+			var numChannels = DmxFixture.types.at(fixture.type).at(\numChannels);
 			var address = fixture.address.asInteger;
-			for(address, (address + channels - 1), { |n|
+			for(address, (address + numChannels - 1), { |n|
 				chans[n] = 1;
 			});
 		});
@@ -318,84 +314,6 @@ DmxPatcher {
 			});
 		});
 	}
-
-
-	// now a patcher gets NodeProxys registered for methods. Those NodeProxy should play out
-	// .kr signals, whose values are being used to call the registered methods on the certain
-	// fixture or group of fixtures.
-	// Since a method might require multiple arguments, multichannel busses are needed. There
-	// is no way of having actual groups of busses or something like that, so there must be
-	// arguments * channels busses available (in case there are different values for different
-	// fixtures). The fixtures wrap around the available fixtures in any certain group.
-
-	// Or: a patcher registers busses for methods. Then NodeProxys need to play to those busses.
-	// (A NodeProxy with Out.kr appareantly doesn't even create it's own private bus, see NP.busLoaded.)
-	// deprecated!!
-	makeBusForMethod { |method, numArgs = 1, group = nil, channels = 1|
-
-		var bus = (); // bus proto...
-		var numFixtures = this.numFixtures(group);
-		// how do I get the number of arguments for a method??? I don't! => numArgs...
-
-		if(server.pid == nil, {
-			"Boot server first!!".postln;
-			^false;
-		});
-
-		if(group.notNil, {
-			bus[\group] = group;
-		});
-
-		bus.numArgs = numArgs;
-		bus.channels = channels; // notice that bus.channels != bus.bus.numChannels, the latter is channels*numArgs!
-		bus.method = method;
-
-		bus.bus = Bus.control(server, numArgs * channels);
-
-		bus.routine = Routine.run({
-			var busdata;
-			var message = ();
-			inf.do({
-				message[\method] = bus.method;
-				if(bus.group.notNil, {
-					message[\group] = group;
-				});
-				// wrap around things? hmmm...
-				// if there is 1 channel, call on any fixture. if there are >1 channels, call on
-				// each fixture
-				if(bus.channels == 1, {
-					// bus contains only data for 1 channel so it also must be numArgs big...
-					message[\data] = bus.bus.getnSynchronous;
-/*					message.postln;*/
-					this.message(message);
-				}, {
-					// for each fixture get data from bus (!offset!), wrap bus channels...
-					busdata = bus.bus.getnSynchronous; // .getnAt doesn't exist...
-					numFixtures.do({ |i|
-						var offset = i*bus.numArgs;
-						message[\fixture] = i;
-						// wrapAt with an array gives array of values at indizies given by array
-						message[\data] = busdata.wrapAt((offset..(offset+numArgs-1)));
-						this.message(message);
-					});
-				});
-				(1/fps).wait;
-			});
-		});
-
-		// add bus to bus-dictionary
-		busses.add(bus);
-	}
-	removeBus { |index|
-		if (busses[index].notNil, {
-			busses[index].routine.stop;
-			busses[index].bus.free;
-			busses.removeAt(index);
-		}, {
-			("Nothing found at index "+index).postln;
-		});
-	}
-
 
 	havefun { |group = 'stage'|
 		"Fun".postln;
