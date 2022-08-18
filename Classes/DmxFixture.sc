@@ -496,7 +496,9 @@ DmxFixture {
 			// do for each method, but omit reserved keys 'channel', 'init', 'numArgs:
 			if(reservedKeys.includes(method) == false, {
 				var numArgs = DmxFixture.types[type].numArgs[method];
-				buses.put(method, Bus.control(server, numArgs));
+				var bus = Bus.control(server, numArgs);
+				bus.setSynchronous(-1);
+				buses.put(method, bus);
 			});
 		});
 		^buses;
@@ -510,12 +512,18 @@ DmxFixture {
 
 	makeRoutine { |fps|
 		routine = Routine.run({
-			var val, lastval = ();
+			var val, lastval = (), changed;
 			inf.do({
 				buses.keysValuesDo({ |method, bus|
-					// btw: asynchronous access is way to slow as well...
-					val = bus.getnSynchronous;
-					if(val != lastval[method], {
+					var numArgs = DmxFixture.types[type].numArgs[method];
+					if (numArgs > 1, {
+						val = bus.getnSynchronous;
+						changed = val[0] > 0 and: { val != lastval[method] };
+					}, {
+						val = bus.getSynchronous;
+						changed = val > 0 and: { val != lastval[method] };
+					});
+					if (changed, {
 						this.action(method, val);
 					});
 					lastval[method] = val;
