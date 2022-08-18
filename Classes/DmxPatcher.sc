@@ -74,9 +74,8 @@ DmxPatcher {
 
 	end {
 		// frees buses, stop routines, remove fixtures?
-		fixtures.do({ |fix|
-			fix[\routine].stop;
-			this.freeBusesForFixture(fix);
+		fixtures.do({ |fixture|
+			fixture.stop;
 		});
 		all.removeAt(id);
 		if((default == this) && (all.size > 0), {
@@ -93,86 +92,35 @@ DmxPatcher {
 		//   I have 5 methods for each fixture in memory... => call methods when fixture gets called!
 
 		var fixtureNum;
-		var fixture = (); // holds fixture to add later
-		var buses; // kr-buses used for data...
-		var routine; // update-routine which calls actions periodically
 
-		buses = this.makeBussesForFixture(myFixture);
-		routine = this.makeRoutineForFixture(myFixture, buses);
+		myFixture.makeBuses(server);
+		myFixture.makeRoutine(fps);
 
-		fixture[\fixture] = myFixture;
-		fixture[\buses] = buses;
-		fixture[\routine] = routine;
-
-		fixtures.add(fixture);
+		fixtures.add(myFixture);
 		fixtureNum = fixtures.size - 1;
 
 		if(myGroup.notNil, {
 			if(groups[myGroup].isNil, {
-				groups.put(myGroup, List());
+				groups.put(myGroup, DmxGroup(myGroup));
 			});
-			groups[myGroup].add(fixture);
+			groups[myGroup].add(myFixture);
 		});
 
 		if (myFixture.buffer.notNil and: { buffers.indexOf(myFixture.buffer).isNil }, {
 			buffers.add(myFixture.buffer);
 		});
 
-		// call init message as default...
-		if(myFixture.hasMethod(\init), {
-			myFixture.action(\init);
-		});
+		myFixture.tryAction(\init);
 
 		// create busses for each method, get their data in a routine or something...
-	}
-	makeBussesForFixture { |myFixture|
-		// make bus for every method, store in busses-List
-		var buses = Dictionary(); // key->value list
-		// somewhereHere...
-		var reservedKeys = ['channels', 'chNames', 'init', 'numArgs'];
-		DmxFixture.types[myFixture.type].keysValuesDo({ |method|
-			// do for each method, but omit reserved keys 'channel', 'init', 'numArgs:
-			if(reservedKeys.includes(method) == false, {
-				var numArgs = DmxFixture.types[myFixture.type].numArgs[method];
-				buses.put(method, Bus.control(server, numArgs));
-			});
-		});
-		^buses;
-	}
-	freeBusesForFixture { |myFixture|
-		myFixture[\buses].do({ |bus|
-			bus.free;
-		});
-	}
-	makeRoutineForFixture { |fixture, buses|
-		var routine = Routine.run({
-			var val, lastval = ();
-			inf.do({
-				buses.keysValuesDo({ |method, bus|
-					// btw: asynchronous access is way to slow as well...
-					val = bus.getnSynchronous;
-					if(val != lastval[method], {
-						fixture.action(method, val);
-					});
-					lastval[method] = val;
-				});
-				(1/fps).wait;
-			});
-		});
-		^routine;
 	}
 
 	removeFixture { |index|
 		var fixture = fixtures[index];
-		groups.keysValuesDo { |grpname, fixtures|
-			fixtures.do { |fix, n|
-				if(fix == fixture, {
-					this.removeFixtureFromGroup(n, grpname);
-				});
-			};
+		groups.keysValuesDo { |grpname, grp|
+			grp.remove(fixture);
 		};
-		fixture[\routine].stop;
-		this.freeBusesForFixture(fixture);
+		fixture.stop;
 		fixtures.removeAt(index);
 
 		if (fixture.buffer.notNil, {
@@ -189,9 +137,9 @@ DmxPatcher {
 		var chans = nil!512;
 		var freeChan = nil;
 		var cntr, n;
-		fixtures.do({ |dev|
-			var channels = DmxFixture.types.at(dev.fixture.type).at(\channels);
-			var address = dev.fixture.address.asInteger;
+		fixtures.do({ |fixture|
+			var channels = DmxFixture.types.at(fixture.type).at(\channels);
+			var address = fixture.address.asInteger;
 			for(address, (address + channels - 1), { |n|
 				chans[n] = 1;
 			});
@@ -224,23 +172,16 @@ DmxPatcher {
 	}
 	addGroup { |groupname|
 		if(groups.at(groupname.asSymbol).isNil, {
-			groups.put(groupname.asSymbol, List());
+			groups.put(groupname.asSymbol, DmxGroup(groupname));
 		});
 	}
 	removeGroup { |group|
 		if(group.isKindOf(Symbol), {
 			groups.removeAt(group);
 		});
-		if(group.isKindOf(Integer), {
-			"fix me!".postln;
-/*			groups.removeAt(group);*/
-		});
 	}
 	addFixtureToGroup { |fixture, group|
 		groups[group].add(fixture);
-	}
-	removeFixtureFromGroup { |fixtureIndx, group|
-		groups[group].removeAt(fixtureIndx);
 	}
 
 	numFixtures { |group = nil|
@@ -252,46 +193,11 @@ DmxPatcher {
 	}
 
 	busesForMethod { |method, fixtureList|
-		var buses = List();
-		if(fixtureList.isNil, {
-			fixtureList = fixtures;
-		});
-		fixtureList.do({ |fix, i|
-			if(fix.fixture.hasMethod(method), {
-				buses.add(fix.buses[method]);
-			});
-		});
-		^buses;
-	}
-	numBusesForMethod{ |method, fixtureList|
-		var numbuses = 0;
-		if(fixtureList.isNil, {
-			fixtureList = fixtures;
-		});
-		fixtureList.do({ |fix, i|
-			if(fix.fixture.hasMethod(method), {
-				numbuses = numbuses +1;
-			});
-		});
-		^numbuses;
-	}
-	busesForGroupMethod { |group, method|
-		var fixtureList = groups[group];
-		^this.busesForMethod(method, fixtureList);
-	}
-	numBusesForGroupMethod { |group, method|
-		var fixtureList = groups[group];
-		^this.numBusesForMethod(method, fixtureList);
+		DmxFixture.busesForMethod(method, fixtures);
 	}
 
-	setGroup { |group, arg1, arg2|
-		if (groups[group].notNil, {
-			groups[group].do({ |fix, i|
-				fix.fixture.set(arg1, arg2);
-			});
-		}, {
-			"DmxPatcher::setGroup group %s does not exist".format(group).postln;
-		});
+	numBusesForMethod{ |method|
+		DmxFixture.numBusesForMethod(method, fixtures);
 	}
 
 	message { |msg|
@@ -345,7 +251,7 @@ DmxPatcher {
 			fixtureNums = [fixtureNums];
 		});
 		fixtureNums.do({ |num, i|
-			if(fixtureList[num % fixtureList.size].fixture.hasMethod(method), {
+			if(fixtureList[num % fixtureList.size].hasMethod(method), {
 				// wrap fixtures index, just to be sure...
 /*				fixtureList[num % fixtureList.size].action(method, data);*/
 				// rewrite: write data to bus instead of fixture directly.

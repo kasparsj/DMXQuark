@@ -29,7 +29,7 @@ DmxProxyChain {
 			if(group.isNil, {
 				buses = patcher.busesForMethod(method);
 			}, {
-				buses = patcher.busesForGroupMethod(group, method);
+				buses = patcher.groups[group].busesForMethod(group, method);
 			});
 			buses.do({|bus, i|
 				var offset = i * chansPerMethod;

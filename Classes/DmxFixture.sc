@@ -8,6 +8,8 @@ DmxFixture {
 	var <buffer;
 	var <>address = 0;
 	var <>type;
+	var <buses;
+	var <routine;
 
 	*initClass {
 		// load some default devices on class instantiation
@@ -423,16 +425,6 @@ DmxFixture {
 
 	}
 
-
-	*new { |mytype, mybuffer, myaddress = 0|
-		^super.new.init(mytype, mybuffer, myaddress);
-	}
-	init { | mytype, mybuffer, myaddress = 0 |
-		type = mytype;
-		buffer = mybuffer;
-		address = myaddress;
-	}
-
 	*addType { |title, definition|
 		if(types.isNil, {
 			types = IdentityDictionary();
@@ -451,12 +443,14 @@ DmxFixture {
 			types.at(title.asSymbol)[\channels] = 1;
 		});
 	}
+
 	*types {
 		if(types.isNil, {
 			types = IdentityDictionary();
 		});
 		^types;
 	}
+
 	*typeNames {
 		var myTypes = [];
 		types.keysValuesDo({|name, dev|
@@ -465,9 +459,81 @@ DmxFixture {
 		^myTypes;
 	}
 
+	*busesForMethod { |method, fixtureList|
+		var buses = List();
+		fixtureList.do({ |fixture, i|
+			if(fixture.hasMethod(method), {
+				buses.add(fixture.buses[method]);
+			});
+		});
+		^buses;
+	}
+
+	*numBusesForMethod { |method, fixtureList|
+		var numbuses = 0;
+		fixtureList.do({ |fixture, i|
+			if(fixture.hasMethod(method), {
+				numbuses = numbuses +1;
+			});
+		});
+		^numbuses;
+	}
+
+	*new { |mytype, mybuffer, myaddress = 0|
+		^super.new.init(mytype, mybuffer, myaddress);
+	}
+
+	init { | mytype, mybuffer, myaddress = 0 |
+		type = mytype;
+		buffer = mybuffer;
+		address = myaddress;
+	}
+
+	makeBuses { |server|
+		var reservedKeys = ['channels', 'chNames', 'init', 'numArgs'];
+		buses = Dictionary();
+		DmxFixture.types[type].keysValuesDo({ |method|
+			// do for each method, but omit reserved keys 'channel', 'init', 'numArgs:
+			if(reservedKeys.includes(method) == false, {
+				var numArgs = DmxFixture.types[type].numArgs[method];
+				buses.put(method, Bus.control(server, numArgs));
+			});
+		});
+		^buses;
+	}
+
+	freeBuses {
+		buses.do({ |bus|
+			bus.free;
+		});
+	}
+
+	makeRoutine { |fps|
+		routine = Routine.run({
+			var val, lastval = ();
+			inf.do({
+				buses.keysValuesDo({ |method, bus|
+					// btw: asynchronous access is way to slow as well...
+					val = bus.getnSynchronous;
+					if(val != lastval[method], {
+						this.action(method, val);
+					});
+					lastval[method] = val;
+				});
+				(1/fps).wait;
+			});
+		});
+		^routine;
+	}
+
+	stop {
+		routine.stop;
+		this.freeBuses();
+	}
+
 	set { |arg1, arg2|
-		if (arg1.isKindOf(Symbol) and: { hasMethod(arg1) }, {
-			action(arg1, arg2);
+		if (arg1.isKindOf(Symbol) and: { this.hasMethod(arg1) }, {
+			this.action(arg1, arg2);
 		}, {
 			var values = arg1, chan = arg2 ? 0;
 			if(arg1.isKindOf(SequenceableCollection).not, {
@@ -483,7 +549,7 @@ DmxFixture {
 			});
 			if (values.size > types[type][\channels], {
 				values = values[0..(types[type][\channels]-1)];
-				"DmxFixture::set too more values than channels".postln;
+				"more values than channels passed".postln;
 			});
 			buffer.set(values, (address-1)+chan);
 		});
@@ -505,10 +571,16 @@ DmxFixture {
 
 	action { |method, arguments|
 		var def = types[type].at(method.asSymbol);
-		if (def.motNil, {
+		if (def.notNil, {
 			def.value(this, arguments);
 		}, {
-			("method "+method+" not found in "+type.asString+"!").postln;
+			"method % not found in %!".format(method, type.asString).postln;
+		});
+	}
+
+	tryAction {
+		if(this.hasMethod(\init), {
+			this.action(\init);
 		});
 	}
 
@@ -521,7 +593,8 @@ DmxFixture {
 		if (index.notNil, {
 			^index;
 		}, {
-			("channel "+name+" not found in "+type.asString+"!").postln;
+			"channel % not found in %!".format(name, type.asString).postln;
+			().postln;
 		});
 	}
 

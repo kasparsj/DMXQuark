@@ -384,10 +384,10 @@ DmxGui_Main {
 
 			myPatcher.fixtures = List();
 			myTempFixtures = Dictionary();
-			patcher.fixtures.do({ |fix, n|
-				var myFix = (type: fix.fixture.type, address: fix.fixture.address);
+			patcher.fixtures.do({ |fixture, n|
+				var myFix = (type: fixture.type, address: fixture.address);
 				myPatcher.fixtures.add(myFix);
-				myTempFixtures.add(n -> fix);
+				myTempFixtures.add(n -> fixture);
 			});
 
 			myPatcher.groups = List();
@@ -651,8 +651,8 @@ DmxGui_manageFixtures {
 				// all fixtures if 'none' is selected
 				fixtures = patcher.fixtures;
 			});
-			fixtures.do({ |fix|
-				items = items.add(fix.fixture.type.asString + "- addr:" + fix.fixture.address);
+			fixtures.do({ |fixture|
+				items = items.add(fixture.type.asString + "- addr:" + fixture.address);
 			});
 			devslist.items_(items);
 		});
