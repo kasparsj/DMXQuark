@@ -100,10 +100,15 @@ DmxPatcher {
 		fixtureNum = fixtures.size - 1;
 
 		if(myGroup.notNil, {
-			if(groups[myGroup].isNil, {
-				groups.put(myGroup, DmxGroup(myGroup));
+			if (myGroup.isKindOf(SequenceableCollection).not, {
+				myGroup = [myGroup];
 			});
-			groups[myGroup].add(myFixture);
+			myGroup.do { |group|
+				if(groups[group].isNil, {
+					groups.put(group, DmxGroup(group));
+				});
+				groups[group].add(myFixture);
+			};
 		});
 
 		if (myFixture.buffer.notNil and: { buffers.indexOf(myFixture.buffer).isNil }, {

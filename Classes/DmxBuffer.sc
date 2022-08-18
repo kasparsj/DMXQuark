@@ -43,6 +43,7 @@ DmxBuffer {
 	}
 
 	close {
+		"closing buffer...".postln;
 		devices.size.do({
 			devices.pop.close;
 		});
