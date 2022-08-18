@@ -5,9 +5,9 @@
  */
 DmxFixture {
 	classvar types; // holds different types of devices
+	var <buffer;
 	var <>address = 0;
 	var <>type;
-	var <>dmx;
 
 	*initClass {
 		// load some default devices on class instantiation
@@ -19,7 +19,6 @@ DmxFixture {
 			channels: 1,
 			numArgs: (dim: 1),
 			dim: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(0, (args[0] * 255).round.asInteger);
 			},
 			init: { |self|
@@ -49,7 +48,7 @@ DmxFixture {
 				var pans, tilts;
 
 				// get current camera position:
-				var dmx = self.dmx;
+				var dmx = self.getData();
 				var xcam = dmx[0] / 255 + (dmx[1] / 255 / 255);
 				var ycam = dmx[2] / 255 + (dmx[3] / 255 / 255);
 				var zcam = dmx[4] / 255 + (dmx[5] / 255 / 255);
@@ -99,7 +98,6 @@ DmxFixture {
 			channels: 3,
 			numArgs: (color: 3),
 			color: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(0, (args[0] * 255).round.asInteger);
 				self.set(1, (args[1] * 255).round.asInteger);
 				self.set(2, (args[2] * 255).round.asInteger);
@@ -109,7 +107,6 @@ DmxFixture {
 			channels: 6,
 			numArgs: (color: 3, strobe: 1),
 			color: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(0, (args[0] * 255).round.asInteger);
 				self.set(1, (args[1] * 255).round.asInteger);
 				self.set(2, (args[2] * 255).round.asInteger);
@@ -128,7 +125,6 @@ DmxFixture {
 			// dim, strobe, r, g, b, w, chaser, chaser2
 			numArgs: (color: 3),
 			color: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(2, (args[0] * 255).round.asInteger);
 				self.set(3, (args[1] * 255).round.asInteger);
 				self.set(4, (args[2] * 255).round.asInteger);
@@ -144,7 +140,6 @@ DmxFixture {
 			channels: 6,
 			numArgs: (color: 3),
 			color: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(1, (args[0] * 255).round.asInteger);
 				self.set(2, (args[1] * 255).round.asInteger);
 				self.set(3, (args[2] * 255).round.asInteger);
@@ -176,7 +171,6 @@ DmxFixture {
 			channels: 1,
 			numArgs: (fog: 1),
 			fog: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(0, (args[0]*255).round.asInteger);
 			},
 			init: {|self| self.set(0, 0) }
@@ -185,7 +179,6 @@ DmxFixture {
 			channels: 2,
 			numArgs: (blitz: 1),
 			blitz: { |self, args|
-				// return list with dmx slots/addresses (starting from 0 for this fixture) and values
 				self.set(0, (args[0] * 255).round.asInteger);
 			},
 			init: { |self|
@@ -431,15 +424,13 @@ DmxFixture {
 	}
 
 
-	*new { |mytype, myaddress = 0|
-		^super.new.init(mytype, myaddress);
+	*new { |mytype, mybuffer, myaddress = 0|
+		^super.new.init(mytype, mybuffer, myaddress);
 	}
-	init { | mytype, myaddress = 0 |
-		var channels;
-		address = myaddress;
+	init { | mytype, mybuffer, myaddress = 0 |
 		type = mytype;
-		channels = types[type][\channels];
-		dmx = List.newClear(channels).fill(0);
+		buffer = mybuffer;
+		address = myaddress;
 	}
 
 	*addType { |title, definition|
@@ -468,7 +459,6 @@ DmxFixture {
 	}
 	*typeNames {
 		var myTypes = [];
-/*		types.postln;*/
 		types.keysValuesDo({|name, dev|
 			myTypes = myTypes.add(name);
 		});
@@ -488,15 +478,19 @@ DmxFixture {
 			});
 			offset = index;
 		});
-		values.do({ |val, i|
-			if(i + offset < dmx.size, {
-				dmx[i + offset] = val;
-			});
+		if (values.size > types[type][\channels], {
+			values = values[0..(types[type][\channels]-1)];
+			"DmxFixture::set too more values than channels".postln;
 		});
+		buffer.set(values, offset);
 	}
 
-	get { |offset|
-		^dmx[offset];
+	get { |chan|
+		^buffer.buffer[(address-1+chan)];
+	}
+
+	getData {
+		^buffer.buffer[(address-1)..(address-1+types[type][\channels])];
 	}
 
 	action { |method, arguments|

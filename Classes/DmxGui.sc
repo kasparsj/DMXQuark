@@ -94,9 +94,6 @@ DmxGui_Main {
 		btn2 = Button().states_([["Reboot", Color.black, Color.white]])
 			.action_({
 				DmxPatcher.all.do({|patcher|
-					patcher.buffers.do({|buf|
-						buf.close()
-					});
 					patcher.end();
 				});
 				thisProcess.recompile;
@@ -146,9 +143,6 @@ DmxGui_Main {
 		rmvr = Button().states_([ ["Remove Patcher"] ])
 			.action_({
 				var patcherName = ptchrbx.items.at(ptchrbx.value);
-				DmxPatcher.all.at(patcherName).buffers.do({|buf|
-					buf.close()
-				});
 				DmxPatcher.all.at(patcherName).end();
 /*				ptchrbx.items = ptchrbx.items.removeAt(ptchrbx.value);*/
 				this.updateView();
@@ -330,7 +324,6 @@ DmxGui_Main {
 					var dv = adevCompileString.interpret;
 					instance.addDevice(dv);
 				});
-				patcher.addBuffer(instance);
 			});
 			ptchr.fixtures.do({ |dev|
 				patcher.addFixture(DmxFixture.new(dev.type.asSymbol, dev.address));
@@ -467,19 +460,19 @@ DmxGui_SetupPatcher {
 			});
 		});
 
-		addBfrBtn = Button().states_([["Add Buffer"]])
-			.action_({
-				this.addBufferToPatcher(patcher);
-				this.updateView();
-			});
-		rmvBfrBtn = Button().states_([["Remove Buffer"]])
-			.action_({
-				var buffer = bfrslst.items.at(bfrslst.value());
-				if(buffer.notNil, {
-					this.removeBufferFromPatcher(bfrslst.value, patcher);
-					this.updateView();
-				});
-			});
+		// addBfrBtn = Button().states_([["Add Buffer"]])
+		// .action_({
+		// 	this.addBufferToPatcher(patcher);
+		// 	this.updateView();
+		// });
+		// rmvBfrBtn = Button().states_([["Remove Buffer"]])
+		// .action_({
+		// 	var buffer = bfrslst.items.at(bfrslst.value());
+		// 	if(buffer.notNil, {
+		// 		this.removeBufferFromPatcher(bfrslst.value, patcher);
+		// 		this.updateView();
+		// 	});
+		// });
 
 		devslst = ListView();
 		updateActions.add({
@@ -525,14 +518,14 @@ DmxGui_SetupPatcher {
 
 		window.front;
 	}
-	addBufferToPatcher { |patcher|
-		var buffer = DmxBuffer();
-		patcher.addBuffer(buffer);
-	}
-	removeBufferFromPatcher { |index, patcher|
-/*		var bufkey = patcher.buffers.find([buffer]);*/
-		patcher.removeBuffer(index);
-	}
+	// addBufferToPatcher { |patcher|
+	// 	var buffer = DmxBuffer();
+	// 	patcher.addBuffer(buffer);
+	// }
+	// removeBufferFromPatcher { |index, patcher|
+	// 	/*		var bufkey = patcher.buffers.find([buffer]);*/
+	// 	patcher.removeBuffer(index);
+	// }
 
 	addDeviceToBuffer{ |devclass, buffer|
 		var theclass = devclass.asSymbol.asClass;

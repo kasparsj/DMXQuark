@@ -42,7 +42,6 @@ DmxPatcher {
 	}
 
 	init { |myid, callback|
-/*		buffer = List.newClear(512).fill(0);*/
 		fixtures = List();
 		groups = IdentityDictionary();
 		buffers = List();
@@ -75,9 +74,9 @@ DmxPatcher {
 
 	end {
 		// frees buses, stop routines, remove fixtures?
-		fixtures.do({ |dev|
-			dev[\routine].stop;
-			this.freeBusesForFixture(dev);
+		fixtures.do({ |fix|
+			fix[\routine].stop;
+			this.freeBusesForFixture(fix);
 		});
 		buffers.size.do({
 			buffers.pop.close;
@@ -89,23 +88,6 @@ DmxPatcher {
 		if((default == this) && (all.size == 0), {
 			default = nil;
 		});
-	}
-
-	addBuffer { |buffer|
-		// a buffer must react to the set method!
-		buffers.add(buffer);
-	}
-	setBuffers { |dmx, addr|
-/*		"trying to set data to buffers:".postln;*/
-/*		[dmx, addr].postln;*/
-		buffers.do({ |buf|
-/*			buf.set(dmx, addr);*/
-			buf.set(dmx, addr - 1); // dmx starts at 1, everything else in the world at 0
-		});
-	}
-	removeBuffer { |index|
-		buffers.at(index).close();
-		buffers.removeAt(index);
 	}
 
 	addFixture { |myFixture, myGroup|
@@ -135,10 +117,13 @@ DmxPatcher {
 			groups[myGroup].add(fixture);
 		});
 
+		if (myFixture.buffer.notNil and: { buffers.indexOf(myFixture.buffer).isNil }, {
+			buffers.add(myFixture.buffer);
+		});
+
 		// call init message as default...
 		if(myFixture.hasMethod(\init), {
 			myFixture.action(\init);
-			this.setBuffers(myFixture.dmx, myFixture.address);
 		});
 
 		// create busses for each method, get their data in a routine or something...
@@ -171,7 +156,6 @@ DmxPatcher {
 					val = bus.getnSynchronous;
 					if(val != lastval[method], {
 						fixture.action(method, val);
-						this.setBuffers(fixture.dmx, fixture.address);
 					});
 					lastval[method] = val;
 				});
@@ -348,7 +332,6 @@ DmxPatcher {
 			if(fixtureList[num % fixtureList.size].fixture.hasMethod(method), {
 				// wrap fixtures index, just to be sure...
 /*				fixtureList[num % fixtureList.size].action(method, data);*/
-/*				this.setBuffers(fixtureList[num%fixtureList.size].dmx, fixtureList[num%fixtureList.size].address);*/
 				// rewrite: write data to bus instead of fixture directly.
 				if(data.isKindOf(Array), {
 					fixtureList[num % fixtureList.size].buses[method].setn(data);
@@ -381,7 +364,6 @@ DmxPatcher {
 /*			[method, arguments].postln;*/
 			if(fixtureNum < fixtures.size, {
 				fixtures[fixtureNum].action(method, arguments);
-				this.setBuffers(fixtures[fixtureNum].dmx, fixtures[fixtureNum].address);
 			}, {
 				"fixture doesn't exist in patcher!".postln;
 			});
@@ -394,7 +376,6 @@ DmxPatcher {
 			fixtures.do({ |fixture, i|
 				if(fixture.hasMethod(method), {
 					fixture.action(method, arguments);
-					this.setBuffers(fixture.dmx, fixture.address);
 				});
 			});
 		});
@@ -403,16 +384,15 @@ DmxPatcher {
 	groupsMsg {|msg, time, addr, recvPort|
 /*		msg.postln;*/
 		var group = msg[1];
-		var groupDevs = groups[group];
+		var groupFixtures = groups[group];
 		var method = msg[2];
 		var arguments = List();
 		(msg.size-3).do({ |i|
 			arguments.add(msg[i + 3]);
 		});
-		groupDevs.do({|dev, i|
-			if(dev.hasMethod(method), {
-				dev.action(method, arguments);
-				this.setBuffers(dev.dmx, dev.address);
+		groupFixtures.do({|fix, i|
+			if(fix.hasMethod(method), {
+				fix.action(method, arguments);
 			});
 		});
 	}
