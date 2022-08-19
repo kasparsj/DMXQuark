@@ -680,17 +680,24 @@ DmxFixture {
 		^matrix[chan];
 	}
 
-	invert { |chan|
-		if (chan.isKindOf(Symbol), {
-			var index = this.channels.indexOf(chan);
-			if (index.isNil, {
-				"channel % not found in %".format(chan, type).throw;
+	invert { |chans|
+		if (chans.isKindOf(SequenceableCollection).not, {
+			chans = [chans];
+		});
+		chans.do { |chan|
+			if (chan.isKindOf(Symbol), {
+				var index = this.channels.indexOf(chan);
+				if (index.isNil, {
+					"channel % not found in %".format(chan, type).throw;
+				});
+				chan = index;
 			});
-			chan = index;
-		});
-		if (chan.isKindOf(SequenceableCollection).not, {
-			chan = [chan];
-		});
+			matrix[chan] = matrix[chan] * -1;
+		};
+	}
+
+	isInverted { |chan|
+		^(this.multiplier(chan) == -1);
 	}
 }
 
