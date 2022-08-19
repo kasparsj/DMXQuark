@@ -575,7 +575,7 @@ DmxFixture {
 				chan = arg1;
 			});
 			if (chan.isKindOf(Symbol), {
-				var index = types[type][\channels].indexOf(chan);
+				var index = this.channels.indexOf(chan);
 				if (index.isNil, {
 					"channel % not found in %".format(chan, type).throw;
 				});
@@ -592,7 +592,7 @@ DmxFixture {
 
 	get { |chan|
 		if (chan.isKindOf(Symbol), {
-			chan = types[type][\channels].indexOf(chan);
+			chan = this.channels.indexOf(chan);
 			if (chan.isNil, {
 				"channel % not found in %".format(chan, type).throw;
 			});
@@ -626,8 +626,16 @@ DmxFixture {
 		^types[type].at(method.asSymbol).notNil;
 	}
 
+	numChannels {
+		^types[type][\numChannels];
+	}
+
+	channels {
+		^types[type][\channels];
+	}
+
 	channel { |name|
-		var index = types[type][\channels].indexOf(name);
+		var index = this.channels.indexOf(name);
 		if (index.notNil, {
 			^index;
 		}, {
@@ -636,11 +644,15 @@ DmxFixture {
 	}
 
 	hasChannel { |name|
-		^types[type][\channels].indexOf(name).notNil;
+		^this.channels.indexOf(name).notNil;
+	}
+
+	ranges {
+		^types[type][\ranges];
 	}
 
 	range { |channel, name, value|
-		var chRange = if (types[type][\ranges].notNil, { types[type][\ranges].at(channel) }, { nil });
+		var chRange = if (this.ranges.notNil, { this.ranges.at(channel) }, { nil });
 		if (chRange.notNil, {
 			var range = chRange.at(name);
 			if (range.notNil, {
@@ -658,7 +670,7 @@ DmxFixture {
 	}
 
 	hasRange { |channel, name|
-		^(types[type][\ranges].notNil and: { types[type][\ranges].at(channel).notNil and: { types[type][\ranges].at(channel).at(name).notNil } });
+		^(this.ranges.notNil and: { this.ranges.at(channel).notNil and: { this.ranges.at(channel).at(name).notNil } });
 	}
 
 	multiplier { |chan|
@@ -668,8 +680,17 @@ DmxFixture {
 		^matrix[chan];
 	}
 
-	numChannels {
-		^types[type][\numChannels];
+	invert { |chan|
+		if (chan.isKindOf(Symbol), {
+			var index = this.channels.indexOf(chan);
+			if (index.isNil, {
+				"channel % not found in %".format(chan, type).throw;
+			});
+			chan = index;
+		});
+		if (chan.isKindOf(SequenceableCollection).not, {
+			chan = [chan];
+		});
 	}
 }
 
