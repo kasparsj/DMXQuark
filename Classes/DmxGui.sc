@@ -325,8 +325,8 @@ DmxGui_Main {
 					instance.addDevice(dv);
 				});
 			});
-			ptchr.fixtures.do({ |dev|
-				patcher.addFixture(DmxFixture.new(dev.type.asSymbol, dev.address));
+			ptchr.fixtures.do({ |fix|
+				patcher.addFixture(DmxFixture.new(fix.type.asSymbol, fix.address));
 			});
 			ptchr.groups.do({ |grp|
 				patcher.addGroup(grp.name);
@@ -646,7 +646,7 @@ DmxGui_manageFixtures {
 			var items = [];
 			var fixtures;
 			if(grpslist.value > 0, {
-				fixtures = patcher.groups[grpslist.items[grpslist.value]];
+				fixtures = patcher.groups[grpslist.items[grpslist.value]].fixtures;
 			}, {
 				// all fixtures if 'none' is selected
 				fixtures = patcher.fixtures;

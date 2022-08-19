@@ -465,7 +465,7 @@ DmxFixture {
 		var size = (256 / names.size).asInteger;
 		names.do { |name, i|
 			var from = i * size;
-			var to = (i+1) * size - 1;
+			var to = ((i+1) * size - 1).min(255);
 			range.add(name.asSymbol -> (from..to));
 		};
 		^range;
@@ -497,11 +497,10 @@ DmxFixture {
 
 	init { | mytype, mybuffer, myaddress = 0 |
 		if (types[mytype].notNil, {
-			var numChannels = types[mytype][\numChannels];
 			type = mytype;
 			buffer = mybuffer;
 			address = myaddress;
-			matrix = Array.fill(numChannels, 1);
+			matrix = Array.fill(this.numChannels, 1);
 		}, {
 			"fixture type not found %s".format(mytype).throw;
 		});
@@ -582,8 +581,8 @@ DmxFixture {
 				});
 				chan = index;
 			});
-			if (values.size > types[type][\numChannels], {
-				values = values[0..(types[type][\numChannels]-1)];
+			if (values.size > this.numChannels, {
+				values = values[0..(this.numChannels-1)];
 				"more values than channels passed".postln;
 			});
 			to = chan + values.size - 1;
@@ -602,9 +601,8 @@ DmxFixture {
 	}
 
 	getData { |from = 0, to = -1|
-		var numChannels = types[type][\numChannels];
 		while ({ to < 0 }, {
-			to = to + numChannels;
+			to = to + this.numChannels;
 		});
 		^(buffer.buffer[(address-1+from)..(address-1+to)] * matrix[from..to]);
 	}
@@ -668,6 +666,10 @@ DmxFixture {
 			chan = this.channel(chan);
 		});
 		^matrix[chan];
+	}
+
+	numChannels {
+		^types[type][\numChannels];
 	}
 }
 
