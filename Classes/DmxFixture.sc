@@ -662,6 +662,13 @@ DmxFixture {
 	hasRange { |channel, name|
 		^(types[type][\ranges].notNil and: { types[type][\ranges].at(channel).notNil and: { types[type][\ranges].at(channel).at(name).notNil } });
 	}
+
+	multiplier { |chan|
+		if (chan.isKindOf(Symbol), {
+			chan = this.channel(chan);
+		});
+		^matrix[chan];
+	}
 }
 
 /*

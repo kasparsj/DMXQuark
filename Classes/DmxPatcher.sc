@@ -5,7 +5,8 @@ DmxPatcher {
 	var <fixtures;
 	var <groups;
 	var <id;
-	var <buffers; // holds DMXBuffer objects
+	// todo: refactor
+	var <buffers;
 	var server; // holds default server since patcher uses busses!
 	var <>fps; // fps to get data from busses with
 	classvar <default; // default (usually first) DmxPatcher...
@@ -85,10 +86,6 @@ DmxPatcher {
 	}
 
 	addFixture { |myFixture, myGroup|
-		// add fixture to internal list of fixtures
-		// register OSC path/address/methods? Or pass methods to DmxFixture... better not, otherwise
-		//   I have 5 methods for each fixture in memory... => call methods when fixture gets called!
-
 		var fixtureNum;
 
 		myFixture.makeBuses(server);
@@ -97,7 +94,18 @@ DmxPatcher {
 		fixtures.add(myFixture);
 		fixtureNum = fixtures.size - 1;
 
-		if(myGroup.notNil, {
+		// todo: do we need default/all group?
+		// if (myGroup.isNil, {
+		// 	myGroup = List();
+		// 	}, {
+		// 		if (myGroup.isKindOf(SequenceableCollection).not, {
+		// 			myGroup = List.newUsing([myGroup]);
+		// 		});
+		// });
+		// if (myGroup.indexOf(\all).isNil, {
+		// 	myGroup.add(\all)
+		// });
+		if (myGroup.notNil, {
 			if (myGroup.isKindOf(SequenceableCollection).not, {
 				myGroup = [myGroup];
 			});
