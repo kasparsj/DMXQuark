@@ -7,6 +7,7 @@ DmxSoundIn {
 	var <amp;
 	var <loudness;
 	var <mfcc;
+	var <onData;
 	var <onOnset;
 	classvar <all;
 
@@ -20,7 +21,7 @@ DmxSoundIn {
 			onset = Onsets.kr(chain, thresh);
 			amp = Amplitude.kr(input);
 			loudness = Loudness.kr(chain);
-			mfcc = MFCC.kr(chain);
+			mfcc = MFCC.kr(chain, 3);
 			trig = Impulse.kr(rate);
 			SendReply.kr(trig, '/dmx_soundin', [in, onset, amp, loudness] ++ mfcc);
 		}).add;
@@ -45,6 +46,7 @@ DmxSoundIn {
 		threshBus = Bus.control(Server.default).set(myThresh);
 		rate = myRate;
 		synth = Synth(\dmx_soundin, [in: in, thresh: threshBus.asMap, rate: myRate]);
+		onData = DmxSoundIn_onData();
 		onOnset = DmxSoundIn_onOnset();
 		all.add(in -> this);
 	}
@@ -70,7 +72,38 @@ DmxSoundIn {
 		amp = data[2];
 		loudness = data[3];
 		mfcc = data[4..];
+		onData.prSoundIn(this);
 		onOnset.prSoundIn(this);
+	}
+}
+
+DmxSoundIn_onData {
+	var <handlers;
+
+	*new {
+		^super.new.init;
+	}
+
+	init {
+		handlers = List();
+	}
+
+	add { |handler|
+		handlers.add(handler);
+	}
+
+	remove { |handler|
+		handlers.remove(handler);
+	}
+
+	clear {
+		handlers.clear;
+	}
+
+	prSoundIn { |soundIn|
+		handlers.do { |handler|
+			handler.value(soundIn);
+		};
 	}
 }
 
