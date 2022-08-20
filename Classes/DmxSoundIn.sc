@@ -1,5 +1,6 @@
 DmxSoundIn {
 	var <in;
+	var <threshBus;
 	var <rate;
 	var <synth;
 	var <onset;
@@ -11,11 +12,11 @@ DmxSoundIn {
 	*initClass {
 		Class.initClassTree(SynthDef, OSCdef);
 
-		SynthDef(\dmx_soundin, {|out=0, in=0, rate=60|
+		SynthDef(\dmx_soundin, {|out=0, in=0, thresh=0.5, rate=60|
 			var input, amp, chain, onset, loudness, mfcc, trig;
 			input = SoundIn.ar(in);
 			chain = FFT(LocalBuf(1024), input);
-			onset = Onsets.kr(chain);
+			onset = Onsets.kr(chain, thresh);
 			amp = Amplitude.kr(input);
 			loudness = Loudness.kr(chain);
 			mfcc = MFCC.kr(chain);
@@ -33,22 +34,32 @@ DmxSoundIn {
 		all = ();
 	}
 
-	*new { |myIn = 0, myRate = 60|
-		^super.new.init(myIn, myRate);
+	*new { |myIn = 0, myThresh = 0.5, myRate = 60|
+		^super.new.init(myIn, myThresh, myRate);
 	}
 
-	init { |myIn = 0, myRate = 60|
+	init { |myIn = 0, myThresh = 0.5, myRate = 60|
 		this.end;
 		in = myIn;
+		threshBus = Bus.control(Server.default).set(myThresh);
 		rate = myRate;
-		synth = Synth(\dmx_soundin, [in: in, rate: myRate]);
+		synth = Synth(\dmx_soundin, [in: in, thresh: threshBus.asMap, rate: myRate]);
 		all.add(in -> this);
+	}
+
+	thresh {
+		threshBus.getSynchronous;
+	}
+
+	thresh_ { |value|
+		threshBus.set(value);
 	}
 
 	end {
 		if (synth.notNil, {
 			synth.free;
 		});
+		threshBus.free;
 		all.removeAt(in);
 	}
 

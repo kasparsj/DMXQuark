@@ -37,8 +37,8 @@ DmxPatcher {
 		});
 	}
 
-	*new { |id, callback|
-		^super.new.init(id, callback);
+	*new { |myid, callback|
+		^super.new.init(myid, callback);
 	}
 
 	init { |myid, callback|
@@ -48,7 +48,7 @@ DmxPatcher {
 		server = Server.default;
 		fps = 60;
 
-		if(default==nil, { // make this the default patcher if none is there...
+		if (default==nil, {
 			default = this;
 		});
 		all.add(myid -> this);
@@ -66,7 +66,6 @@ DmxPatcher {
 		});
 	}
 
-	// makes this patcher the default patcher
 	makeDefault {
 		default = this;
 	}
