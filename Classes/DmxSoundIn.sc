@@ -7,8 +7,7 @@ DmxSoundIn {
 	var <amp;
 	var <loudness;
 	var <mfcc;
-	var <handlers;
-	var <onceHandlers;
+	var <onOnset;
 	classvar <all;
 
 	*initClass {
@@ -46,8 +45,7 @@ DmxSoundIn {
 		threshBus = Bus.control(Server.default).set(myThresh);
 		rate = myRate;
 		synth = Synth(\dmx_soundin, [in: in, thresh: threshBus.asMap, rate: myRate]);
-		handlers = List();
-		onceHandlers = List();
+		onOnset = DmxSoundIn_onOnset();
 		all.add(in -> this);
 	}
 
@@ -72,30 +70,72 @@ DmxSoundIn {
 		amp = data[2];
 		loudness = data[3];
 		mfcc = data[4..];
-		if (onset == 1, {
-			this.prHandleOnset;
+		onOnset.prSoundIn(this);
+	}
+}
+
+DmxSoundIn_onOnset {
+	var <onHandlers;
+	var <offHandlers;
+	var <onceHandlers;
+	var <wasOnset;
+
+	*new {
+		^super.new.init;
+	}
+
+	init {
+		onHandlers = List();
+		offHandlers = List();
+		onceHandlers = List();
+		wasOnset = false;
+	}
+
+	add { |onHandler, offHandler, delay|
+		onHandlers.add(onHandler);
+		if (offHandler.notNil, {
+			offHandlers.add([offHandler, delay ? 0]);
 		});
 	}
 
-	prHandleOnset {
-		handlers.do { |handler|
-			handler.value;
-		};
-		onceHandlers.do { |handler|
-			handler.value;
-		};
-		onceHandlers.clear;
-	}
-
-	add { |handler|
-		handlers.add(handler);
-	}
-
-	remove { |handler|
-		handlers.remove(handler);
+	remove { |onHandler, offHandler|
+		onHandlers.remove(onHandler);
+		if (offHandler.notNil, {
+			var idx = offHandlers.collect(_.first).indexOf(offHandler);
+			offHandlers.removeAt(idx);
+		});
 	}
 
 	doOnce { |handler|
 		onceHandlers.add(handler);
+	}
+
+	clear {
+		onHandlers.clear;
+		offHandlers.clear;
+		onceHandlers.clear;
+	}
+
+	prSoundIn { |soundIn|
+		if (soundIn.onset == 1, {
+			onHandlers.do { |handler|
+				handler.value(soundIn);
+			};
+			onceHandlers.do { |handler|
+				handler.value(soundIn);
+			};
+			onceHandlers.clear;
+			wasOnset = true;
+		}, {
+			if (wasOnset, {
+				offHandlers.do { |handler|
+					SystemClock.sched(handler[1], {
+						handler[0].value(soundIn);
+						nil;
+					});
+				};
+				wasOnset = false;
+			});
+		});
 	}
 }
