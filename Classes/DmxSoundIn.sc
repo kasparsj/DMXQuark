@@ -7,6 +7,8 @@ DmxSoundIn {
 	var <amp;
 	var <loudness;
 	var <mfcc;
+	var <handlers;
+	var <onceHandlers;
 	classvar <all;
 
 	*initClass {
@@ -28,7 +30,7 @@ DmxSoundIn {
 			var data = msg[3..];
 			var in = data[0].asInteger;
 			var instance = DmxSoundIn.all[in];
-			instance.onSoundData(data);
+			instance.prSoundData(data);
 		}, '/dmx_soundin');
 
 		all = ();
@@ -44,6 +46,8 @@ DmxSoundIn {
 		threshBus = Bus.control(Server.default).set(myThresh);
 		rate = myRate;
 		synth = Synth(\dmx_soundin, [in: in, thresh: threshBus.asMap, rate: myRate]);
+		handlers = List();
+		onceHandlers = List();
 		all.add(in -> this);
 	}
 
@@ -63,17 +67,35 @@ DmxSoundIn {
 		all.removeAt(in);
 	}
 
-	onSoundData { |data|
+	prSoundData { |data|
 		onset = data[1].asInteger;
 		amp = data[2];
 		loudness = data[3];
 		mfcc = data[4..];
 		if (onset == 1, {
-			this.onOnset;
+			this.prHandleOnset;
 		});
 	}
 
-	onOnset {
+	prHandleOnset {
+		handlers.do { |handler|
+			handler.value;
+		};
+		onceHandlers.do { |handler|
+			handler.value;
+		};
+		onceHandlers.clear;
+	}
 
+	add { |handler|
+		handlers.add(handler);
+	}
+
+	remove { |handler|
+		handlers.remove(handler);
+	}
+
+	doOnce { |handler|
+		onceHandlers.add(handler);
 	}
 }
