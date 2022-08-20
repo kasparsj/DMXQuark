@@ -543,7 +543,7 @@ DmxFixture {
 						changed = val > 0 and: { val != lastval[method] };
 					});
 					if (changed, {
-						this.action(method, val);
+						this.set(method, val);
 					});
 					lastval[method] = val;
 				});
