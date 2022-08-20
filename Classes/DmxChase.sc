@@ -62,17 +62,17 @@ DmxChase {
 
 	*new { |myName, myFunc|
 		if (myFunc.isNil, {
-			^all[myName];
+			^all[myName.asSymbol];
 		}, {
 			^super.new.init(myName, myFunc);
 		});
 	}
 
 	init { |myName, myFunc|
-		name = myName;
+		name = myName.asSymbol;
 		func = myFunc;
 		players = List();
-		all[myName] = this;
+		all[name] = this;
 	}
 
 	play { |...args|

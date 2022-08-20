@@ -33,6 +33,10 @@ DmxPlayer { // PatterPlayer
 		if (defaultInst == nil, {
 			defaultInst = this;
 		});
+
+		CmdPeriod.doOnce({
+			defaultInst = nil;
+		});
 	}
 
 	makeDefault {
