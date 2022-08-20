@@ -150,7 +150,7 @@ DmxSoundIn_onOnset {
 	}
 
 	prSoundIn { |soundIn|
-		if (soundIn.onset == 1, {
+		if (soundIn.onset == 1 and: { wasOnset.not }, {
 			onHandlers.do { |handler|
 				handler.value(soundIn);
 			};

@@ -11,6 +11,7 @@ DmxFixture {
 	var <buses;
 	var <routine;
 	var <matrix;
+	var <colors;
 
 	*initClass {
 		// load some default devices on class instantiation
@@ -501,6 +502,7 @@ DmxFixture {
 			buffer = mybuffer;
 			address = myaddress;
 			matrix = Array.fill(this.numChannels, 1);
+			colors = List();
 		}, {
 			"fixture type not found %s".format(mytype).throw;
 		});
@@ -514,7 +516,7 @@ DmxFixture {
 			if(reservedKeys.includes(method) == false, {
 				var numArgs = DmxFixture.types[type].buses[method];
 				if (numArgs.notNil, {
-					var bus = Bus.control(server, numArgs);
+					var bus = Bus.control(server ? Server.default, numArgs);
 					bus.setSynchronous(-1);
 					buses.put(method, bus);
 				});
@@ -610,7 +612,7 @@ DmxFixture {
 	action { |method, arguments|
 		var def = types[type].at(method.asSymbol);
 		if (def.notNil, {
-			def.value(this, arguments);
+			^def.value(this, arguments);
 		}, {
 			"method % not found in %!".format(method, type.asString).postln;
 		});
@@ -698,6 +700,24 @@ DmxFixture {
 
 	isInverted { |chan|
 		^(this.multiplier(chan) == -1);
+	}
+
+	pushColor { |color|
+		if (this.hasMethod(\getColor), {
+			colors.add(this.action(\getColor));
+			this.action(\color, color);
+		}, {
+			"can't pushColor: % does not implement 'getColor' action".format(type).postln;
+		});
+	}
+
+	popColor {
+		if (colors.size > 0, {
+			var last = colors.last;
+			this.action(\color, last);
+			colors.remove(last);
+		});
+
 	}
 }
 

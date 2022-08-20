@@ -7,7 +7,6 @@ DmxPatcher {
 	var <id;
 	// todo: refactor
 	var <buffers;
-	var server; // holds default server since patcher uses busses!
 	var <>fps; // fps to get data from busses with
 	classvar <default; // default (usually first) DmxPatcher...
 	classvar <all; // holds all opened patchers for reference...
@@ -37,15 +36,14 @@ DmxPatcher {
 		});
 	}
 
-	*new { |myid, callback|
-		^super.new.init(myid, callback);
+	*new { |myid|
+		^super.new.init(myid);
 	}
 
-	init { |myid, callback|
+	init { |myid|
 		fixtures = List();
 		groups = IdentityDictionary();
 		buffers = List();
-		server = Server.default;
 		fps = 60;
 
 		if (default==nil, {
@@ -58,12 +56,6 @@ DmxPatcher {
 			^nil;
 		});
 		id = myid;
-
-		if(callback.isNil.not, {
-			server.waitForBoot({ callback.() });
-		}, {
-			server.waitForBoot();
-		});
 	}
 
 	makeDefault {
@@ -87,7 +79,7 @@ DmxPatcher {
 	addFixture { |myFixture, myGroup|
 		var fixtureNum;
 
-		myFixture.makeBuses(server);
+		myFixture.makeBuses();
 		myFixture.makeRoutine(fps);
 
 		fixtures.add(myFixture);
