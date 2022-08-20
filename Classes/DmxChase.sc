@@ -75,8 +75,18 @@ DmxChase {
 		all[name] = this;
 	}
 
-	play { |...args|
-		var env = Environment.newFrom(args), evPlayer;
+	value { |...args|
+		var isArgsArray = args.clump(2).flop[0].every({ |item| item.class == Symbol }) && args.size.even;
+		if (isArgsArray, {
+			var env = this.envir(*args);
+			^func.valueWithEnvir(env);
+		}, {
+			^func.value(*args);
+		});
+	}
+
+	envir { |...args|
+		var env = Environment.newFrom(args);
 		if (env[\player].isNil, { env.put(\player, DmxPlayer.default); });
 		if (env[\fixtures].isNil, {
 			var group = env[\group];
@@ -85,7 +95,12 @@ DmxChase {
 			});
 			env.put(\fixtures, group.fixtures);
 		});
-		evPlayer = env[\player].play(func.valueWithEnvir(env));
+		^env;
+	}
+
+	play { |...args|
+		var env = this.envir(*args);
+		var evPlayer = env[\player].play(func.valueWithEnvir(env));
 		players.add(evPlayer);
 	}
 
