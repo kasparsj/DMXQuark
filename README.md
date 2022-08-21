@@ -1,5 +1,9 @@
-# DMX
+# DMXQuark
 SuperCollider DMX controller quark with support for Serial ([Enttec DMX USB Pro](https://www.enttec.com/product/lighting-communication-protocols/dmx512/dmx-usb-pro/)) and [OLA](https://github.com/OpenLightingProject/ola) (OSC) out.
+
+## Installation
+
+`Quarks.install("https://github.com/kasparsj/DMXQuark.git")`
 
 check also:
 
