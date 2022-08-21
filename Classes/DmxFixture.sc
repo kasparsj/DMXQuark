@@ -569,7 +569,7 @@ DmxFixture {
 				if (this.hasRange(arg1, arg2), {
 					arg2 = this.range(arg1, arg2, arg3 ? 0);
 				}, {
-					"range % not found in % for channel %".format(arg2, type.asString, arg1).throw;
+					"range % not found in % for channel %".format(arg2, type.asString, arg1).postln;
 				});
 			});
 			if (arg1.isKindOf(SequenceableCollection).not, {
