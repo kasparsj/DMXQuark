@@ -7,8 +7,7 @@ check also:
 
 based on code from:
 
-mblight by Benjamin Graf
-https://github.com/bennigraf/mblght
+[mblight](https://github.com/bennigraf/mblght) by Benjamin Graf
 
 ## todo
 - add examples
