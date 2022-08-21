@@ -9,3 +9,6 @@ based on:
 
 mblight by Benjamin Graf
 https://github.com/bennigraf/mblght
+
+## todo
+- add examples
