@@ -1,7 +1,6 @@
-DmxChase {
+DmxChaseDef {
 	var <name;
 	var <func;
-	var <players;
 	classvar <all;
 
 	*initClass {
@@ -71,7 +70,6 @@ DmxChase {
 	init { |myName, myFunc|
 		name = myName.asSymbol;
 		func = myFunc;
-		players = List();
 		all[name] = this;
 	}
 
@@ -87,29 +85,27 @@ DmxChase {
 
 	envir { |...args|
 		var env = Environment.newFrom(args);
-		if (env[\player].isNil, { env.put(\player, DmxPlayer.default); });
+		var playerId = env[\player];
+		var player = if (playerId.isSymbol, { DmxPlayer.all[playerId]; }, { playerId });
+		if (player.isNil, {
+			"player % not found".format(playerId).throw;
+		});
 		if (env[\fixtures].isNil, {
 			var group = env[\group];
+			var patcherId = env[\patcher] ? \default;
+			var patcher = if (patcherId.isSymbol, { DmxPatcher.all[patcherId] }, { patcherId });
+			if (patcher.isNil, {
+				"patcher % not found".format(patcherId).throw;
+			});
 			if (group.isKindOf(Symbol), {
-				group = DmxPatcher.default.groups[group];
+				var groupName = group;
+				group = patcher.groups[groupName];
+				if (group.isNil, {
+					"group % not found".format(groupName).throw;
+				});
 			});
 			env.put(\fixtures, group.fixtures);
 		});
 		^env;
-	}
-
-	play { |...args|
-		var env = this.envir(*args);
-		var evPlayer = env[\player].play(func.valueWithEnvir(env));
-		players.add(evPlayer);
-	}
-
-	stop { |player = \default|
-		DmxPlayer.all[player].stop(players);
-		players.clear;
-	}
-
-	isPlaying {
-		^(players.size > 0);
 	}
 }

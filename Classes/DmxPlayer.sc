@@ -1,4 +1,4 @@
-DmxPlayer { // PatterPlayer
+DmxPlayer { // PatternPlayer
 	var <id;
 	var <moveSpeed;
 	var <fadeSpeed;

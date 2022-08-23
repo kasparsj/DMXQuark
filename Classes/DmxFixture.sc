@@ -565,7 +565,7 @@ DmxFixture {
 			this.action(arg1, arg2);
 		}, {
 			var values = arg1, chan = arg2 ? 0, to;
-			if (arg1.isKindOf(Symbol) and: { arg2.isKindOf(Symbol) }, {
+			if (arg1.isKindOf(Symbol) and: { arg2.isKindOf(Symbol) or: { arg2.isKindOf(Association) } }, {
 				if (this.hasRange(arg1, arg2), {
 					arg2 = this.range(arg1, arg2, arg3 ? 0);
 				}, {
@@ -671,8 +671,9 @@ DmxFixture {
 		});
 	}
 
-	hasRange { |channel, name|
-		^(this.ranges.notNil and: { this.ranges.at(channel).notNil and: { this.ranges.at(channel).at(name).notNil } });
+	hasRange { |channel, range|
+		var key = if (range.isKindOf(Association), { range.key }, { range });
+		^(this.ranges.notNil and: { this.ranges.at(channel).notNil and: { this.ranges.at(channel).at(key).notNil } });
 	}
 
 	multiplier { |chan|
