@@ -51,6 +51,7 @@ DmxPlayer { // PatternPlayer
 		if (pattern.isKindOf(Pattern).not, {
 			"pattern not found in %".format(id).throw;
 		});
+		// todo: need to set \player in pattern
 		evPlayer = pattern.play;
 		players.add(evPlayer);
 		^evPlayer;

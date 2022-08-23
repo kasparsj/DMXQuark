@@ -439,10 +439,119 @@ DmxFixture {
 			"Give an event as definition...".postln;
 			^false;
 		});
+		if (definition[\channels].notNil, {
+			addActions(defintion);
+		});
+		definition[\numChannels] = definition[\numChannels] ? 1;
 		types.put(title.asSymbol, definition);
-		// give default channel count...
-		if(definition.at(\numChannels)==nil, {
-			types.at(title.asSymbol)[\numChannels] = 1;
+	}
+
+	*addActions { |definition|
+		var channels = definition[\channels];
+		// todo: allow overrides
+		// color
+		if (channels[\r].notNil and: {channels[\g].notNil and: {channels[\b].notNil} }, {
+			defintion[\color] = { |self, color|
+				var rgb = [0, 0, 0];
+				if (color.isKindOf(Symbol), {
+					color = Color.newName(color, nil, true);
+				});
+				rgb = color.asArray;
+				self.set(\r, (rgb[0] * 255).round.asInteger);
+				self.set(\g, (rgb[1] * 255).round.asInteger);
+				self.set(\b, (rgb[2] * 255).round.asInteger);
+				definition[\getColor] = { |self|
+					var idx = self.channel(\r);
+					self.getData(idx, idx+2);
+				};
+			};
+		}, {
+			if (channels[\c].notNil and: {channels[\m].notNil and: {channels[\y].notNil} }, {
+				defintion[\color] = { |self, color|
+					var cmy = [0, 0, 0];
+					if (color.isKindOf(Symbol), {
+						color = Color.newName(color, nil, true);
+					});
+					if (color.isKindOf(Color), {
+						cmy[0] = 1.0 - color.red;
+						cmy[1] = 1.0 - color.green;
+						cmy[2] = 1.0 - color.blue;
+					}, {
+						cmy = color;
+					});
+					self.set(\c, (cmy[0] * 255).round.asInteger);
+					self.set(\m, (cmy[1] * 255).round.asInteger);
+					self.set(\y, (cmy[2] * 255).round.asInteger);
+				};
+				definition[\getColor] = { |self|
+					var idx = self.channel(\c);
+					self.getData(idx, idx+2);
+				};
+			});
+		});
+		// pan
+		if (channels[\panc].notNil and: {channels[\panf].notNil}, {
+			definition[\pan] = { |self, pan|
+				self.set(\panc, (pan * 255).floor.asInteger);
+				self.set(\panf, ((pan % (1/255)) * 255 * 255).round.asInteger);
+			};
+		});
+		if (channels[\pan].notNil or: { definition[\pan].notNil }, {
+			defintion[\panDeg] = { |self, degrees|
+				self.set(\pan, (degrees / 540.0).min(1.0));
+			};
+			defintion[\panCenter] = { |self, angle|
+				self.action(\panDeg, (270 + angle).min(315).max(225));
+			};
+			defintion[\panCross] = { |self, angle|
+				self.action(\panDeg, (225 + angle).min(270).max(180));
+			};
+			defintion[\panSides] = { |self, angle|
+				self.action(\panDeg, (315 + angle).min(360).max(270));
+			};
+		});
+		// tilt
+		if (channels[\tiltc].notNil and: { channels[\tiltf].notNil }, {
+			definition[\tilt] = { |self, tilt|
+				self.set(\tiltc, (tilt * 255).floor.asInteger);
+				self.set(\tiltf, ((tilt % (1/255)) * 255 * 255).round.asInteger);
+			};
+		});
+		if (channels[\tilt].notNil or: { definition[\tilt].notNil }, {
+			definition[\tiltDeg] = { |self, degrees|
+				self.action(\tilt, (degrees / 270.0).min(1.0));
+			};
+			definition[\tiltSky] = { |self, angle|
+				self.action(\tiltDeg, (270 + angle).min(270).max(225));
+			};
+			definition[\tiltAudience] = { |self, angle|
+				self.action(\tiltDeg, (180 + angle).min(225).max(135));
+			};
+			definition[\tiltDown] = { |self, angle|
+				self.action(\tiltDeg, (135 + angle).min(180).max(90));
+			};
+			definition[\tiltFront] = { |self, angle|
+				self.action(\tiltDeg, (225 + angle).min(270).max(180));
+			};
+		});
+		// pos
+		if (definition[\pan].notNil and: { definition[\tilt].notNil }, {
+			definition[\pos] = { |self, pos|
+				self.action(\pan, pos[0]);
+				self.action(\tilt, pos[1]);
+			};
+		});
+		// shutter
+		if (channels[\shutter].notNil, {
+			definition[\strobe] = { |self, speed|
+				self.action(\shutter, \strobe, speed);
+			};
+			definition[\pulse] = { |self, speed|
+				self.action(\shutter, \pulse, speed);
+			};
+			definition[\strobeRand] = { |self, speed|
+				self.action(\shutter, \strobe_rand, speed);
+			};
 		});
 	}
 
