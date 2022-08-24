@@ -3,7 +3,7 @@ PdmxScene : Pattern {
 
 	*new { arg ... pairs;
 		if (pairs.size.odd, { Error("Pmono should have even number of args.\n").throw; });
-		super.newCopyArgs(pairs);
+		^super.newCopyArgs(pairs);
 	}
 
 	storeArgs { ^patternpairs }
@@ -11,10 +11,19 @@ PdmxScene : Pattern {
 	embedInStream { arg inval;
 		var dic = Dictionary.newFrom(patternpairs);
 		var patcherId = dic[\patcher] ? \default;
-		var patcher = if (patcherId.isSymbol, { DmxPatcher.all[patcherId] }, { patcherId });
+		var patcher = if (patcherId.isSymbol, {
+			if (patcherId == \default, {
+				DmxPatcher.default;
+			}, {
+				DmxPatcher.all[patcherId]
+			});
+		}, { patcherId });
 		var groupName = dic[\group];
 		var group = if (groupName.isSymbol, { patcher.groups[groupName] }, { groupName });
 		var fixtures = dic[\fixtures] ? dic[\fixture];
+		if (patcher.isNil, {
+			"patcher % not found".format(patcherId).throw;
+		});
 		[\patcher, \group, \fixtures, \fixture].do { |key|
 			dic.removeAt(key);
 		};
@@ -53,10 +62,12 @@ PdmxChase : Pattern {
 		^chasePatt.embedInStream(inevent);
 	}
 
-	play {
+	play { arg clock, protoEvent, quant;
 		var env = chaseDef.envir(*patternpairs);
-		var evPlayer = env[\player].play(this);
+		var evPlayer = this.asEventStreamPlayer(protoEvent).play(clock, false, quant);
 		players.add(evPlayer);
+		env[\player].players.add(evPlayer)
+		^evPlayer;
 	}
 
 	stop {

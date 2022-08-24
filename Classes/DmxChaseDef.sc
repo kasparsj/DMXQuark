@@ -75,19 +75,19 @@ DmxChaseDef {
 
 	value { |...args|
 		var isArgsArray = args.clump(2).flop[0].every({ |item| item.class == Symbol }) && args.size.even;
-		if (isArgsArray, {
+		^if (isArgsArray, {
 			var env = this.envir(*args);
-			^func.valueWithEnvir(env);
+			func.valueWithEnvir(env);
 		}, {
-			^func.value(*args);
+			func.value(*args);
 		});
 	}
 
 	envir { |...args|
 		var env = Environment.newFrom(args);
 		var playerId = env[\player] ? \default;
-		var player = if (playerId.isSymbol, { DmxPlayer.all[playerId]; }, { playerId });
-		if (player.isNil, {
+		env[\player] = if (playerId.isSymbol, { DmxPlayer.all[playerId]; }, { playerId });
+		if (env[\player].isNil, {
 			"player % not found".format(playerId).throw;
 		});
 		if (env[\fixtures].isNil, {
