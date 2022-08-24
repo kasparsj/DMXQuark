@@ -85,7 +85,7 @@ DmxChaseDef {
 
 	envir { |...args|
 		var env = Environment.newFrom(args);
-		var playerId = env[\player];
+		var playerId = env[\player] ? \default;
 		var player = if (playerId.isSymbol, { DmxPlayer.all[playerId]; }, { playerId });
 		if (player.isNil, {
 			"player % not found".format(playerId).throw;
@@ -93,7 +93,13 @@ DmxChaseDef {
 		if (env[\fixtures].isNil, {
 			var group = env[\group];
 			var patcherId = env[\patcher] ? \default;
-			var patcher = if (patcherId.isSymbol, { DmxPatcher.all[patcherId] }, { patcherId });
+			var patcher = if (patcherId.isSymbol, {
+				if (patcherId == \default, {
+					DmxPatcher.default;
+				}, {
+					DmxPatcher.all[patcherId]
+				});
+			}, { patcherId });
 			if (patcher.isNil, {
 				"patcher % not found".format(patcherId).throw;
 			});
