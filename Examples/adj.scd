@@ -1,5 +1,5 @@
 // ADJ 4 moving heads & 3 pars example
-(
+//(
 ~buf = DmxBuffer();
 SerialPort.devices.do { |dev|
 	var port = "/dev/tty.usbserial-EN092504";
@@ -9,7 +9,7 @@ SerialPort.devices.do { |dev|
 };
 ~buf.addDevice(OlaOsc());
 
-~dmx = DmxPatcher(\grusgrus);
+~dmx = DmxPatcher(\adj_example);
 
 DmxFixture.loadLibrary("adj");
 // fuxtures setup - server must be booted
@@ -39,7 +39,7 @@ Server.default.waitForBoot {
 
 	"setup complete".postln;
 };
-)
+//)
 
 // GUI
 DmxGui.new;
