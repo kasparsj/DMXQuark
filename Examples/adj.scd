@@ -1,3 +1,4 @@
+// ADJ 4 moving heads & 3 pars example
 (
 ~buf = DmxBuffer();
 SerialPort.devices.do { |dev|
