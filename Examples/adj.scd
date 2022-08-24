@@ -1,5 +1,5 @@
 // ADJ 4 moving heads & 3 pars example
-//(
+(
 ~buf = DmxBuffer();
 SerialPort.devices.do { |dev|
 	var port = "/dev/tty.usbserial-EN092504";
@@ -39,7 +39,7 @@ Server.default.waitForBoot {
 
 	"setup complete".postln;
 };
-//)
+)
 
 // GUI
 DmxGui.new;
