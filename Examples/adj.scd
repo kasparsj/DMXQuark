@@ -132,4 +132,16 @@ PdmxScene(\group, \pars, \shutter, \closed).play;
 }, 0.1);
 )
 
-//
+// DEBUG & TESTING
+
+// inspect buffer
+~buf.buffer
+
+// modify the buffer directly
+~buf.set(0, 255.rand); // pan
+~buf.set(1, 123); // upan
+~buf.set(2, 255.rand); // tilt
+~buf.set(3, 123); // utilt
+~buf.set(5, 255); // cyan
+~buf.set(17, 95); // shutter
+~buf.set(18, 255); // dimmer
