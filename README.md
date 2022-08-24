@@ -10,6 +10,8 @@ It supports Serial ([Enttec DMX USB Pro](https://www.enttec.com/product/lighting
 
 ## Art-Net support and simulator
 
+SupporCollider currently does not directly support TCP/UDP networking, therefore if you need to output to Art-Net or other TCP/UDP protocol, you can use [OSC2DMX](https://github.com/kasparsj/OSC2DMX) bridge application.
+
 [OSC2DMX](https://github.com/kasparsj/OSC2DMX) is an OSC to DMX bridge application with support for Enttec DMX USB Pro, Art-Net and simulator software.
 
 ## Todo
