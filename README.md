@@ -19,7 +19,7 @@ SupporCollider currently does not directly support TCP/UDP networking, therefore
 [OSC2DMX](https://github.com/kasparsj/OSC2DMX) is an OSC to DMX bridge application with support for Enttec DMX USB Pro, Art-Net and simulator software.
 
 ## Todo
-- add examples
+- add more examples
 - create help files
 
 ## Contributors
