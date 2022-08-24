@@ -9,10 +9,12 @@ check also:
 
 [OSC2DMX](https://github.com/kasparsj/OSC2DMX) - OSC to DMX forwarding with support for Enttec DMX USB Pro, Art-Net and simulator software.
 
+## Todo
+- add examples
+- create help files
+
+## Contributors
+
 based on code from:
 
 [mblight](https://github.com/bennigraf/mblght) by Benjamin Graf
-
-## todo
-- add examples
-- create help files
