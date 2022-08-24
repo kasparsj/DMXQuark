@@ -92,13 +92,13 @@ DmxFixture {
 				self.set(\pan, (degrees / 540.0).min(1.0));
 			};
 			definition[\panCenter] = { |self, angle|
-				self.action(\panDeg, (270 + angle).min(315).max(225));
+				self.set(\panDeg, (270 + angle).min(315).max(225));
 			};
 			definition[\panCross] = { |self, angle|
-				self.action(\panDeg, (225 + angle).min(270).max(180));
+				self.set(\panDeg, (225 + angle).min(270).max(180));
 			};
 			definition[\panSides] = { |self, angle|
-				self.action(\panDeg, (315 + angle).min(360).max(270));
+				self.set(\panDeg, (315 + angle).min(360).max(270));
 			};
 		});
 		// tilt
@@ -110,38 +110,38 @@ DmxFixture {
 		});
 		if (channels.indexOf(\tilt).notNil or: { definition[\tilt].notNil }, {
 			definition[\tiltDeg] = { |self, degrees|
-				self.action(\tilt, (degrees / 270.0).min(1.0));
+				self.set(\tilt, (degrees / 270.0).min(1.0));
 			};
 			definition[\tiltSky] = { |self, angle|
-				self.action(\tiltDeg, (270 + angle).min(270).max(225));
+				self.set(\tiltDeg, (270 + angle).min(270).max(225));
 			};
 			definition[\tiltAudience] = { |self, angle|
-				self.action(\tiltDeg, (180 + angle).min(225).max(135));
+				self.set(\tiltDeg, (180 + angle).min(225).max(135));
 			};
 			definition[\tiltDown] = { |self, angle|
-				self.action(\tiltDeg, (135 + angle).min(180).max(90));
+				self.set(\tiltDeg, (135 + angle).min(180).max(90));
 			};
 			definition[\tiltFront] = { |self, angle|
-				self.action(\tiltDeg, (225 + angle).min(270).max(180));
+				self.set(\tiltDeg, (225 + angle).min(270).max(180));
 			};
 		});
 		// pos
 		if (definition[\pan].notNil and: { definition[\tilt].notNil }, {
 			definition[\pos] = { |self, pos|
-				self.action(\pan, pos[0]);
-				self.action(\tilt, pos[1]);
+				self.set(\pan, pos[0]);
+				self.set(\tilt, pos[1]);
 			};
 		});
 		// shutter
 		if (channels.indexOf(\shutter).notNil, {
 			definition[\strobe] = { |self, speed|
-				self.action(\shutter, \strobe, speed);
+				self.set(\shutter, \strobe, speed);
 			};
 			definition[\pulse] = { |self, speed|
-				self.action(\shutter, \pulse, speed);
+				self.set(\shutter, \pulse, speed);
 			};
 			definition[\strobeRand] = { |self, speed|
-				self.action(\shutter, \strobe_rand, speed);
+				self.set(\shutter, \strobe_rand, speed);
 			};
 		});
 	}
@@ -314,7 +314,7 @@ DmxFixture {
 		if (def.notNil, {
 			^def.value(this, arguments);
 		}, {
-			"method % not found in %!".format(method, type.asString).postln;
+			"method % not found in %".format(method, type.asString).postln;
 		});
 	}
 
@@ -356,7 +356,7 @@ DmxFixture {
 	range { |channel, name, value|
 		var chRange = if (this.ranges.notNil, { this.ranges.at(channel) }, { nil });
 		if (chRange.notNil, {
-			var range = chRange.at(name);
+			var range = chRange.at(if (name.isKindOf(Association), { name.key }, { name }));
 			if (range.notNil, {
 				if (value.notNil, {
 					^range[((range.size-1) * value).round.asInteger];
