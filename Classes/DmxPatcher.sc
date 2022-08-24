@@ -141,7 +141,7 @@ DmxPatcher {
 			var numChannels = DmxFixture.types.at(fixture.type).at(\numChannels);
 			var address = fixture.address.asInteger;
 			for(address, (address + numChannels - 1), { |n|
-				chans[n] = 1;
+				chans[(n-1)] = 1;
 			});
 		});
 		// 2nd approach: Step through chans, run counter that adds up if channel is free and otherwise resets, once counter = numChans -> found free slot!
@@ -157,7 +157,7 @@ DmxPatcher {
 		});
 		if(cntr == numChans, {
 			// found one!
-			freeChan = n - numChans;
+			freeChan = n - numChans + 1;
 		});
 		^freeChan;
 	}

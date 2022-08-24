@@ -72,7 +72,7 @@ DmxFixture.addType(\adj_vizi_cmy300_26, (
 ));
 
 DmxFixture.addType(\adj_12p_hex_ip_13, (
-	numChannels: 14,
+	numChannels: 13,
 	channels: [
 		\r, \g, \b, \white, \amber, \uv,
 		\dimmer,

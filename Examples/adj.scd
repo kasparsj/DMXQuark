@@ -16,10 +16,9 @@ DmxFixture.loadLibrary("adj");
 Server.default.waitForBoot {
 	var numHeads = 4;
 	var numPars = 3;
-	var offset = 1+0; // dmx addresses start from 1
 	numHeads.do { |i|
 		var type = DmxFixture.types[\adj_vizi_cmy300_26];
-		var fixture = DmxFixture(\adj_vizi_cmy300_26, ~buf, offset+(i*type[\numChannels]));
+		var fixture = DmxFixture(\adj_vizi_cmy300_26, ~buf, ~dmx.nextFreeAddr(type[\numChannels]));
 		var groups = [\heads];
 		~dmx.addFixture(fixture, groups);
 		// invert pan
@@ -27,10 +26,9 @@ Server.default.waitForBoot {
 			fixture.invertChannel([\panc, \panf]);
 		});
 	};
-	offset = ~dmx.fixtures.last.address + ~dmx.fixtures.last.numChannels;
 	numPars.do { |i|
 		var type = DmxFixture.types[\adj_12p_hex_ip_13];
-		var fixture = DmxFixture(\adj_12p_hex_ip_13, ~buf, offset+(i*type[\numChannels]));
+		var fixture = DmxFixture(\adj_12p_hex_ip_13, ~buf, ~dmx.nextFreeAddr(type[\numChannels]));
 		var groups = [\pars];
 		~dmx.addFixture(fixture, groups);
 	};
@@ -108,14 +106,14 @@ PdmxScene(\group, \pars, \shutter, \closed).play;
 ~soundIn.onData.clear;
 ~soundIn.onData.add({ |soundIn|
 	var mul = 100;
-	PdmxScene(\group, \pars_truss, \dummer, ((soundIn.amp * mul) * 255).round.asInteger.max(255)).play;
+	PdmxScene(\group, \pars, \dummer, ((soundIn.amp * mul) * 255).round.asInteger.max(255)).play;
 });
 )
 
 (
 ~soundIn.onData.clear;
 ~soundIn.onData.add({ |soundIn|
-	PdmxScene(\group, \pars_truss, \color, soundIn.mfcc);
+	PdmxScene(\group, \pars, \color, soundIn.mfcc);
 });
 )
 
@@ -138,10 +136,10 @@ PdmxScene(\group, \pars, \shutter, \closed).play;
 ~buf.buffer
 
 // modify the buffer directly
-~buf.set(0, 255.rand); // pan
-~buf.set(1, 123); // upan
-~buf.set(2, 255.rand); // tilt
-~buf.set(3, 123); // utilt
+~buf.set(0, 255.rand); // pan coarse
+~buf.set(1, 123); // pan fine
+~buf.set(2, 255.rand); // tilt coarse
+~buf.set(3, 123); // tilt fine
 ~buf.set(5, 255); // cyan
 ~buf.set(17, 95); // shutter
 ~buf.set(18, 255); // dimmer

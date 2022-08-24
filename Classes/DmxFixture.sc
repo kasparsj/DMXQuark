@@ -192,20 +192,22 @@ DmxFixture {
 		^numbuses;
 	}
 
-	*new { |mytype, mybuffer, myaddress = 0|
+	*new { | mytype, mybuffer, myaddress = 1 |
 		^super.new.init(mytype, mybuffer, myaddress);
 	}
 
-	init { | mytype, mybuffer, myaddress = 0 |
-		if (types[mytype].notNil, {
-			type = mytype;
-			buffer = mybuffer;
-			address = myaddress;
-			matrix = Array.fill(this.numChannels, 1);
-			colors = List();
-		}, {
+	init { | mytype, mybuffer, myaddress = 1 |
+		if (myaddress < 1, {
+			"DMX addresses start from 1".format(mytype).throw;
+		});
+		if (types[mytype].isNil, {
 			"fixture type not found %s".format(mytype).throw;
 		});
+		type = mytype;
+		buffer = mybuffer;
+		address = myaddress;
+		matrix = Array.fill(this.numChannels, 1);
+		colors = List();
 	}
 
 	makeBuses { |server|
