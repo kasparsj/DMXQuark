@@ -1,4 +1,3 @@
-(
 SynthDef(\dmx_sine, { |out = 0, freq = 1, speed = 1, phase = 0, lo = 0, hi = 1|
 	Out.kr(out, SinOsc.kr(freq * speed, phase).range(lo, hi));
 }).add;
@@ -48,4 +47,3 @@ SynthDef(\dmx_noise, { |out=0, freq = 1, speed = 1, lo = 0, hi = 1|
 SynthDef(\dmx_noise2, { |out=0, freq_0, freq_1, speed = 1, lo = 0, hi = 1|
 	Out.kr(out, LFNoise2.kr([freq_0 * speed, freq_1 * speed]).range(lo, hi));
 }).add;
-)
