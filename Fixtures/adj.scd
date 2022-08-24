@@ -63,6 +63,7 @@ DmxFixture.addType(\adj_vizi_cmy300_26, (
 		self.set([127, 127, 127, 127], 0);
 		// pan/tilt speed fast
 		self.set(\move_speed, 0);
+		// color wheel speed fast
 		self.set(\color_speed, 0);
 		// shutter open/dimmer full:
 		self.set(\shutter, \open);

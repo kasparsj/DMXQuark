@@ -383,7 +383,7 @@ DmxFixture {
 		^matrix[chan];
 	}
 
-	invert { |chans|
+	invertChannel { |chans|
 		if (chans.isKindOf(SequenceableCollection).not, {
 			chans = [chans];
 		});
