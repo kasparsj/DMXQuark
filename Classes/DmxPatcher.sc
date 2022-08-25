@@ -19,22 +19,27 @@ DmxPatcher {
 		all = ();
 
 		Event.addEventType(\dmx, { |server|
+			var groupName, group, fixtures, instrument;
+			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type, \dur, \sustain, \delta];
 			var patcherId = ~patcher ? \default;
 			var patcher = if (patcherId.isSymbol, {
 				if (patcherId == \default, {
 					DmxPatcher.default;
 				}, {
-					DmxPatcher.all[patcherId]
+					DmxPatcher.all[patcherId];
 				});
 			}, { patcherId });
-			var groupName = ~group;
-			var group = if (groupName.isSymbol, { patcher.groups[groupName] }, { groupName });
-			var fixtures = ~fixtures ? ~fixture;
-			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type, \dur, \sustain, \delta];
-			if (patcher.isNil, {
-				"patcher % not found".format(patcherId).throw;
-			});
-			if (group.notNil, {
+			groupName = ~group;
+			group = if (groupName.isSymbol, {
+				if (patcher.notNil, {
+					patcher.groups[groupName];
+				}, {
+					"patcher % not found".format(patcherId).postln;
+					nil;
+				});
+			}, { groupName });
+			fixtures = ~fixtures ? ~fixture;
+			if (fixtures.notNil or: { group.notNil }, {
 				if (fixtures.notNil, {
 					if (fixtures.isSequenceableCollection.not, { fixtures = [fixtures]; });
 					fixtures.do { |fixture|
