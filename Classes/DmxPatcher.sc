@@ -30,7 +30,7 @@ DmxPatcher {
 			var groupName = ~group;
 			var group = if (groupName.isSymbol, { patcher.groups[groupName] }, { groupName });
 			var fixtures = ~fixtures ? ~fixture;
-			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type];
+			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type, \dur, \sustain, \delta];
 			if (patcher.isNil, {
 				"patcher % not found".format(patcherId).throw;
 			});

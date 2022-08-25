@@ -1,47 +1,17 @@
-PdmxScene : Pattern {
-	var <>patternpairs;
-
+PdmxScene : Pbind {
 	*new { arg ... pairs;
-		if (pairs.size.odd, { Error("Pmono should have even number of args.\n").throw; });
+		if (pairs.size.odd, { Error("PdmxScene should have even number of args.\n").throw; });
 		^super.newCopyArgs(pairs);
 	}
 
-	storeArgs { ^patternpairs }
-
-	embedInStream { arg inevent;
-		var dict, patcherId, patcher;
-		var groupName, group, fixtures;
-		var streampairs = patternpairs.copy;
-		var endval = (streampairs.size - 1);
-		var event;
-
-		forBy (1, endval, 2) { arg i;
-			streampairs.put(i, streampairs[i].asStream);
-		};
-
-		inevent.put(\type, \dmx);
-		if (inevent.isNil) { ^nil.yield };
-		event = inevent.copy;
-		forBy (0, endval, 2) { arg i;
-			var name = streampairs[i];
-			var stream = streampairs[i+1];
-			var streamout = stream.next(event);
-			if (streamout.isNil) { ^inevent };
-
-			if (name.isSequenceableCollection) {
-				if (name.size > streamout.size) {
-					("the pattern is not providing enough values to assign to the key set:" + name).warn;
-					^inevent
-				};
-				name.do { arg key, i;
-					event.put(key, streamout[i]);
-				};
-			}{
-				event.put(name, streamout);
-			};
-		};
-		inevent = event.yield;
-		^event;
+	embedInStream { |inevent|
+		var dict = Dictionary.newFrom(patternpairs);
+		dict.put(\type, \dmx);
+		if (dict[\dur].isNil and: { dict[\sustain].isNil and: { dict[\delta].isNil } }, {
+			dict.put(\delta, Pseq([0], 1));
+		});
+		patternpairs = dict.asKeyValuePairs;
+		^super.embedInStream(inevent);
 	}
 }
 

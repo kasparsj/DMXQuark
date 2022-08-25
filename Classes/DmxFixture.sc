@@ -285,18 +285,18 @@ DmxFixture {
 				chan = arg1;
 			});
 			if (chan.isKindOf(Symbol), {
-				var index = this.channels.indexOf(chan);
-				if (index.isNil, {
-					"channel % not found in %".format(chan, type).throw;
+				chan = this.channels.indexOf(chan);
+			});
+			if (chan.notNil, {
+				if (values.size > this.numChannels, {
+					values = values[0..(this.numChannels-1)];
+					"more values than channels passed".postln;
 				});
-				chan = index;
+				to = chan + values.size - 1;
+				buffer.set(values * matrix[chan..to], (address-1) + chan);
+			}, {
+				"channel % not found in %".format(chan, type).postln;
 			});
-			if (values.size > this.numChannels, {
-				values = values[0..(this.numChannels-1)];
-				"more values than channels passed".postln;
-			});
-			to = chan + values.size - 1;
-			buffer.set(values * matrix[chan..to], (address-1) + chan);
 		});
 	}
 
