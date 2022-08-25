@@ -11,6 +11,7 @@ DmxFixture {
 	var <buses;
 	var <routine;
 	var <matrix;
+	var <busvals;
 	var <colors;
 
 	*loadLibrary { |name|
@@ -207,6 +208,7 @@ DmxFixture {
 		buffer = mybuffer;
 		address = myaddress;
 		matrix = Array.fill(this.numChannels, 1);
+		busvals = ();
 		colors = List();
 	}
 
@@ -235,26 +237,30 @@ DmxFixture {
 
 	makeRoutine { |fps|
 		routine = Routine.run({
-			var val, lastval = (), changed;
 			inf.do({
-				buses.keysValuesDo({ |method, bus|
-					var numArgs = DmxFixture.types[type].buses[method];
-					if (numArgs > 1, {
-						val = bus.getnSynchronous;
-						changed = val[0] > 0 and: { val != lastval[method] };
-					}, {
-						val = bus.getSynchronous;
-						changed = val > 0 and: { val != lastval[method] };
-					});
-					if (changed, {
-						this.set(method, val);
-					});
-					lastval[method] = val;
-				});
+				this.updateFromBuses;
 				(1/fps).wait;
 			});
 		});
 		^routine;
+	}
+
+	updateFromBuses {
+		var val, changed;
+		buses.keysValuesDo({ |method, bus|
+			var numArgs = DmxFixture.types[type].buses[method];
+			if (numArgs > 1, {
+				val = bus.getnSynchronous;
+				changed = val[0] > 0 and: { val != busvals[method] };
+			}, {
+				val = bus.getSynchronous;
+				changed = val > 0 and: { val != busvals[method] };
+			});
+			if (changed, {
+				this.set(method, val);
+			});
+			busvals[method] = val;
+		});
 	}
 
 	stop {

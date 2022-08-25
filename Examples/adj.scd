@@ -1,4 +1,5 @@
 // ADJ 4 moving heads & 3 pars example
+// SETUP
 (
 ~buf = DmxBuffer();
 SerialPort.devices.do { |dev|
@@ -12,7 +13,7 @@ SerialPort.devices.do { |dev|
 ~dmx = DmxPatcher(\adj_example);
 
 DmxFixture.loadLibrary("adj");
-// fuxtures setup - server must be booted
+// fixtures setup - server must be booted
 Server.default.waitForBoot {
 	var numHeads = 4;
 	var numPars = 3;
@@ -99,6 +100,10 @@ PdmxScene(\group, \heads, \color_speed, 255).play;
 // turn off
 PdmxScene(\group, \heads, \shutter, \closed).play;
 PdmxScene(\group, \pars, \shutter, \closed).play;
+
+// Pbind SCENES
+Pdef(\randomPan, Pbind(\type, \dmx, \group, \heads, \panDeg, Pwhite(180, 360))).play;
+Pdef(\randomPan).stop;
 
 // BEAT
 // todo: comment

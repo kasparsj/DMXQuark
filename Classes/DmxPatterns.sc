@@ -8,43 +8,40 @@ PdmxScene : Pattern {
 
 	storeArgs { ^patternpairs }
 
-	embedInStream { arg inval;
-		var dic = Dictionary.newFrom(patternpairs);
-		var patcherId = dic[\patcher] ? \default;
-		var patcher = if (patcherId.isSymbol, {
-			if (patcherId == \default, {
-				DmxPatcher.default;
-			}, {
-				DmxPatcher.all[patcherId]
-			});
-		}, { patcherId });
-		var groupName = dic[\group];
-		var group = if (groupName.isSymbol, { patcher.groups[groupName] }, { groupName });
-		var fixtures = dic[\fixtures] ? dic[\fixture];
-		if (patcher.isNil, {
-			"patcher % not found".format(patcherId).throw;
-		});
-		[\patcher, \group, \fixtures, \fixture].do { |key|
-			dic.removeAt(key);
+	embedInStream { arg inevent;
+		var dict, patcherId, patcher;
+		var groupName, group, fixtures;
+		var streampairs = patternpairs.copy;
+		var endval = (streampairs.size - 1);
+		var event;
+
+		forBy (1, endval, 2) { arg i;
+			streampairs.put(i, streampairs[i].asStream);
 		};
-		if (group.notNil, {
-			if (fixtures.notNil, {
-				if (fixtures.isSequenceableCollection.not, { fixtures = [fixtures]; });
-				fixtures.do { |fixture|
-					fixture = if (fixture.isInteger, { group.fixtures[fixture] }, { fixture });
-					dic.keysValuesDo { |key, value|
-						fixture.set(key, value);
-					};
+
+		inevent.put(\type, \dmx);
+		if (inevent.isNil) { ^nil.yield };
+		event = inevent.copy;
+		forBy (0, endval, 2) { arg i;
+			var name = streampairs[i];
+			var stream = streampairs[i+1];
+			var streamout = stream.next(event);
+			if (streamout.isNil) { ^inevent };
+
+			if (name.isSequenceableCollection) {
+				if (name.size > streamout.size) {
+					("the pattern is not providing enough values to assign to the key set:" + name).warn;
+					^inevent
 				};
-			}, {
-				dic.keysValuesDo { |key, value|
-					group.set(key, value);
+				name.do { arg key, i;
+					event.put(key, streamout[i]);
 				};
-			});
-		}, {
-			"group % not found in patcher %".format(group, patcher.id).postln;
-		});
-		^inval;
+			}{
+				event.put(name, streamout);
+			};
+		};
+		inevent = event.yield;
+		^event;
 	}
 }
 
@@ -57,14 +54,23 @@ PdmxChase : Pattern {
 		^super.newCopyArgs(DmxChaseDef(name.asSymbol), pairs, List())
 	}
 
+	storeArgs { ^patternpairs }
+
 	embedInStream { | inevent |
 		var chasePatt = chaseDef.value(*patternpairs);
 		^chasePatt.embedInStream(inevent);
 	}
 
 	play { arg clock, protoEvent, quant;
-		var env = chaseDef.envir(*patternpairs);
-		var evPlayer = this.asEventStreamPlayer(protoEvent).play(clock, false, quant);
+		var env, evPlayer;
+		var streampairs = patternpairs.copy;
+
+		forBy (1, (streampairs.size - 1), 2) { arg i;
+			streampairs.put(i, streampairs[i].asStream);
+		};
+
+		env = chaseDef.envir(*streampairs);
+		evPlayer = this.asEventStreamPlayer(protoEvent).play(clock, false, quant);
 		players.add(evPlayer);
 		env[\player].players.add(evPlayer)
 		^evPlayer;

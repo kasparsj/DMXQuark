@@ -1,5 +1,5 @@
-/*
-	DmxPatcher: Registers lighting equipment of certain types (?), manages routing to actual dmx addresses
+/**
+ * DmxPatcher: Registers lighting equipment of certain types (?), manages routing to actual dmx addresses
  */
 DmxPatcher {
 	var <fixtures;
@@ -18,20 +18,42 @@ DmxPatcher {
 
 		all = ();
 
-		// default lighting event. Allows to play light Pattern style:
-		// Pbind(\type, \light, \method, \dim, \data, Pwhite(0.1, 0.9, 5), \dur, 1).play
-		Event.addEventType(\mblight, {
-			var patcher;
-			if(~patcher.isNil, {
-				patcher = DmxPatcher.default;
-			}, {
-				patcher = DmxPatcher.all[~patcher];
+		Event.addEventType(\dmx, { |server|
+			var patcherId = ~patcher ? \default;
+			var patcher = if (patcherId.isSymbol, {
+				if (patcherId == \default, {
+					DmxPatcher.default;
+				}, {
+					DmxPatcher.all[patcherId]
+				});
+			}, { patcherId });
+			var groupName = ~group;
+			var group = if (groupName.isSymbol, { patcher.groups[groupName] }, { groupName });
+			var fixtures = ~fixtures ? ~fixture;
+			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type];
+			if (patcher.isNil, {
+				"patcher % not found".format(patcherId).throw;
 			});
-			//currentEnvironment.postln;
-			if(patcher.notNil, {
-				patcher.message(currentEnvironment);
+			if (group.notNil, {
+				if (fixtures.notNil, {
+					if (fixtures.isSequenceableCollection.not, { fixtures = [fixtures]; });
+					fixtures.do { |fixture|
+						fixture = if (fixture.isInteger, { group.fixtures[fixture] }, { fixture });
+						currentEnvironment.keysValuesDo { |key, value|
+							if (reservedKeys.indexOf(key).isNil, {
+								fixture.set(key, value);
+							});
+						};
+					};
+				}, {
+					currentEnvironment.keysValuesDo { |key, value|
+						if (reservedKeys.indexOf(key).isNil, {
+							group.set(key, value);
+						});
+					};
+				});
 			}, {
-				"DmxPatcher not reachable!".postln;
+				"group % not found in patcher %".format(group, patcher.id).postln;
 			});
 		});
 	}
@@ -192,7 +214,7 @@ DmxPatcher {
 		});
 	}
 
-	busesForMethod { |method, fixtureList|
+	busesForMethod { |method|
 		DmxFixture.busesForMethod(method, fixtures);
 	}
 
