@@ -20,35 +20,105 @@ PdmxChase : Pattern {
 	var <players;
 
 	*new { arg name ... pairs;
+		var chaseDef = DmxChaseDef(name.asSymbol);
 		if (pairs.size.odd, { Error("PdmxChase should have odd number of args.\n").throw; });
-		^super.newCopyArgs(DmxChaseDef(name.asSymbol), pairs, List())
+		if (chaseDef.isNil, { Error("DmxChaseDef % not found.\n").format(name).throw; });
+		^super.newCopyArgs(chaseDef, pairs, List());
 	}
 
 	storeArgs { ^patternpairs }
 
 	embedInStream { | inevent |
-		var chasePatt = chaseDef.value(*patternpairs);
-		^chasePatt.embedInStream(inevent);
+		var pattern;
+		var env = this.prInitEnv(inevent);
+		this.prSetPlayer(env);
+		this.prSetFixtures(env);
+		pattern = chaseDef.valueWithEnvir(env);
+		^pattern.embedInStream(inevent);
 	}
 
-	play { arg clock, protoEvent, quant;
-		var env, evPlayer;
-		var streampairs = patternpairs.copy;
 
-		forBy (1, (streampairs.size - 1), 2) { arg i;
+	prInitEnv { |inevent|
+		var env;
+		var streampairs = patternpairs.copy;
+		var endval = streampairs.size - 1;
+
+		forBy (1, endval, 2) { arg i;
 			streampairs.put(i, streampairs[i].asStream);
 		};
 
-		env = chaseDef.envir(*streampairs);
+		env = Environment.newFrom(inevent.asKeyValuePairs);
+		forBy (0, endval, 2) { arg i;
+			var name = streampairs[i];
+			var stream = streampairs[i+1];
+			var streamout = stream.next(env);
+			if (streamout.isNil) { ^inevent };
+
+			if (name.isSequenceableCollection) {
+				if (name.size > streamout.size) {
+					("the pattern is not providing enough values to assign to the key set:" + name).warn;
+					^inevent
+				};
+				name.do { arg key, i;
+					env.put(key, streamout[i]);
+				};
+			}{
+				env.put(name, streamout);
+			};
+		};
+		^env;
+	}
+
+	prSetPlayer { |env|
+		var playerId = env[\player] ? \default;
+		env[\player] = if (playerId.isSymbol, { DmxPlayer.all[playerId]; }, { playerId });
+		if (env[\player].isNil, {
+			"player % not found".format(playerId).postln;
+		});
+	}
+
+	prSetFixtures { |env|
+		if (env[\fixtures].isNil, {
+			var group = env[\group];
+			var patcherId = env[\patcher] ? \default;
+			var patcher = if (patcherId.isSymbol, {
+				if (patcherId == \default, {
+					DmxPatcher.default;
+				}, {
+					DmxPatcher.all[patcherId]
+				});
+			}, { patcherId });
+			if (patcher.isNil, {
+				"patcher % not found".format(patcherId).throw;
+			});
+			if (group.isKindOf(Symbol), {
+				var groupName = group;
+				group = patcher.groups[groupName];
+				if (group.isNil, {
+					"group % not found".format(groupName).throw;
+				});
+			});
+			env.put(\fixtures, group.fixtures);
+		});
+	}
+
+	play { arg clock, protoEvent, quant;
+		var dmxPlayer = if (protoEvent.notNil, { protoEvent[\player] }), evPlayer;
+		if (dmxPlayer.isNil) {
+			var dict = Dictionary.newFrom(patternpairs);
+			this.prSetPlayer(dict);
+			dmxPlayer = dict[\player];
+		};
 		evPlayer = this.asEventStreamPlayer(protoEvent).play(clock, false, quant);
 		players.add(evPlayer);
-		env[\player].players.add(evPlayer)
+		dmxPlayer.players.add(evPlayer)
 		^evPlayer;
 	}
 
 	stop {
-		var env = chaseDef.envir(*patternpairs);
-		env[\player].stop(players);
+		var dict = Dictionary.newFrom(patternpairs);
+		this.prSetPlayer(dict);
+		dict[\player].stop(players);
 		players.clear;
 	}
 
