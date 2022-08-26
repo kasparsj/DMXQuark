@@ -20,7 +20,7 @@ DmxPatcher {
 
 		Event.addEventType(\dmx, { |server|
 			var groupName, group, fixtures, instrument;
-			var reservedKeys = [\patcher, \group, \fixtures, \fixture, \server, \type, \dur, \sustain, \delta];
+			var reservedKeys = [\patcher, \player, \group, \fixtures, \fixture, \server, \type, \dur, \sustain, \delta];
 			var patcherId = ~patcher ? \default;
 			var patcher = if (patcherId.isSymbol, {
 				if (patcherId == \default, {
@@ -46,7 +46,7 @@ DmxPatcher {
 						fixture = if (fixture.isInteger, { group.fixtures[fixture] }, { fixture });
 						currentEnvironment.keysValuesDo { |key, value|
 							if (reservedKeys.indexOf(key).isNil, {
-								fixture.set(key, value);
+								fixture.trySet(key, value);
 							});
 						};
 					};

@@ -21,7 +21,7 @@ DmxGroup {
 
 	set { |arg1, arg2, arg3|
 		fixtures.do({ |fixture, i|
-			fixture.set(arg1, arg2, arg3);
+			fixture.trySet(arg1, arg2, arg3);
 		});
 	}
 

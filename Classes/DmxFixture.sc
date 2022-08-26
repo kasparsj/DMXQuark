@@ -272,7 +272,8 @@ DmxFixture {
 		if (arg1.isKindOf(Symbol) and: { this.hasMethod(arg1) }, {
 			this.action(arg1, arg2);
 		}, {
-			var values = arg1, chan = arg2 ? 0, to;
+			var values = arg1, chan = arg2 ? 0;
+			var index, to;
 			if (arg1.isKindOf(Symbol) and: { arg2.isKindOf(Symbol) or: { arg2.isKindOf(Association) } }, {
 				if (this.hasRange(arg1, arg2), {
 					arg2 = this.range(arg1, arg2, arg3 ? 0);
@@ -284,19 +285,30 @@ DmxFixture {
 				values = [arg2];
 				chan = arg1;
 			});
+			index = chan;
 			if (chan.isKindOf(Symbol), {
-				chan = this.channels.indexOf(chan);
+				index = this.channels.indexOf(chan);
 			});
-			if (chan.notNil, {
+			if (index.notNil, {
 				if (values.size > this.numChannels, {
 					values = values[0..(this.numChannels-1)];
 					"more values than channels passed".postln;
 				});
-				to = chan + values.size - 1;
-				buffer.set(values * matrix[chan..to], (address-1) + chan);
+				to = index + values.size - 1;
+				buffer.set(values * matrix[index..to], (address-1) + index);
 			}, {
 				"channel % not found in %".format(chan, type).postln;
 			});
+		});
+	}
+
+	trySet { |arg1, arg2, arg3|
+		var chan = arg2;
+		if (arg1.isKindOf(SequenceableCollection).not, {
+			chan = arg1;
+		});
+		if (chan.isNumber or: { this.hasChannel(chan) or: { this.hasMethod(chan) } }, {
+			this.set(arg1, arg2, arg3);
 		});
 	}
 

@@ -8,7 +8,7 @@ PdmxScene : Pbind {
 		var dict = Dictionary.newFrom(patternpairs);
 		dict.put(\type, \dmx);
 		if (dict[\dur].isNil and: { dict[\sustain].isNil and: { dict[\delta].isNil } }, {
-			dict.put(\delta, Pseq([0], 1));
+			dict = Dictionary.newFrom([\delta, Pseq([0], 1)] ++ dict.asKeyValuePairs);
 		});
 		patternpairs = dict.asKeyValuePairs;
 		^super.embedInStream(inevent);
