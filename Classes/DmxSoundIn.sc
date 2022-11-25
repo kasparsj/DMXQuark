@@ -12,7 +12,7 @@ DmxSoundIn {
 	classvar <all;
 
 	*initClass {
-		Class.initClassTree(SynthDef, OSCdef);
+		Class.initClassTree(SynthDescLib, SynthDef, OSCdef);
 
 		SynthDef(\dmx_soundin, {|out=0, in=0, thresh=0.5, rate=60|
 			var input, amp, chain, onset, loudness, mfcc, trig;
