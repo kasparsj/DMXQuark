@@ -17,7 +17,7 @@ DmxFixture.addType(\cameo_thunderwash_600_7_1, (
 			rand: (80..102),
 			break: (103..127),
 			speed: (128..250),
-			speed: (251..255),
+			open: (251..255),
 		)
 	),
 	buses: (color: 3), // busName -> numArgs
