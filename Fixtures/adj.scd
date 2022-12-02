@@ -103,4 +103,22 @@ DmxFixture.addType(\adj_12p_hex_ip_13, (
 		self.set(\shutter, \open);
 	},
 ));
+
+DmxFixture.addType(\adj_mega_hex_par_8, (
+	numChannels: 8,
+	channels: [
+		\r, \g, \b, \white, \amber, \uv,
+		\dimmer,
+		\shutter,
+	],
+	ranges: (
+		shutter: DmxFixture.createRange([\closed, \open1, \strobe, \open2, \pulse, \open3, \strobe_rand, \open]),
+	),
+	buses: (color: 3), // busName -> numArgs
+	init: { |self|
+		self.action(\color, \red);
+		self.set(\dimmer, 255);
+		self.set(\shutter, \open);
+	},
+));
 )
