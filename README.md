@@ -13,7 +13,7 @@ It supports Serial ([Enttec DMX USB Pro](https://www.enttec.com/product/lighting
 See:
 
 - ADJ 4 moving heads & 3 pars example: [Examples/adj.scd](Examples/adj.scd)
-- Cameo 2 ThunderWashes & 4 pars example: [Examples/adj.scd](Examples/cameo+adj.scd)
+- Cameo 2 ThunderWashes & 4 pars example: [Examples/cameo+adj.scd](Examples/cameo+adj.scd)
 
 ## Art-Net support and simulator
 
