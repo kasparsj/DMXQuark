@@ -23,7 +23,7 @@ DmxFixture.addType(\cameo_thunderwash_600_7_1, (
 	buses: (color: 3), // busName -> numArgs
 	init: { |self|
 		self.action(\color, \red);
-		self.set(\dimmer, 255);
+		self.set(\dimmer, 127);
 		self.set(\shutter, \open);
 	},
 ));
