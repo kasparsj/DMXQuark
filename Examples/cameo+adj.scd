@@ -34,6 +34,9 @@ DmxFixture.loadLibrary("cameo");
 ~magentaColors = Color.xwindows.keys.select({ |key| key.asString.find("magenta").notNil });
 )
 
+// check buffer initialized correctly
+~buf.buffer[99..107].postln;
+
 // turn washes off
 PdmxScene(\group, \wash, \dimmer, 0).play;
 
