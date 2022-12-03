@@ -34,7 +34,8 @@ DmxFixture.loadLibrary("cameo");
 ~magentaColors = Color.xwindows.keys.select({ |key| key.asString.find("magenta").notNil });
 )
 
-// check buffer initialized correctly
+// check buffer initialized correctly:
+// buffer indexes start from 0, while DMX addresses from 1, therefore to access address 100-108:
 ~buf.buffer[99..107].postln;
 
 // turn washes off
