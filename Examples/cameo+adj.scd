@@ -60,7 +60,7 @@ z = {
 )
 
 (
-// change color wheel every 5 seconds
+// turn strobe on for 1 second every 5 secs
 y.stop;
 y = {
 	inf.do {
@@ -78,9 +78,9 @@ x.stop;
 x= {
 	inf.do { |i|
 		4.do { |j|
-			PdmxScene(\group, \wash, \shutter, 0).play;
-			~dmx.groups[\wash].fixtures[j].set(\color, [255, 0, 0]);
-			~dmx.groups[\wash].fixtures[j].set(\shutter, 255);
+			PdmxScene(\group, \pars, \shutter, 0).play;
+			~dmx.groups[\pars].fixtures[j].set(\color, [255, 0, 0]);
+			~dmx.groups[\pars].fixtures[j].set(\shutter, 255);
 			0.03.wait;
 		};
 	};
@@ -92,7 +92,7 @@ x= {
 w.stop;
 w = {
 	PdmxScene(\group, \wash, \dimmer, 255).play;
-	1.wait;
+	0.5.wait;
 	PdmxScene(\group, \wash, \dimmer, 0).play;
 }.fork;
 )
